@@ -1,0 +1,23 @@
+<?php
+
+declare(strict_types=1);
+
+use Grazulex\ApiRoute\Facades\ApiRoute;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes - Version {{ version }}
+|--------------------------------------------------------------------------
+*/
+
+ApiRoute::version('{{ version }}', function () {
+    Route::get('/', function () {
+        return response()->json([
+            'version' => '{{ version }}',
+            'message' => 'Welcome to API {{ version }}',
+        ]);
+    });
+
+    // Add your routes here
+});

@@ -1,0 +1,102 @@
+{
+    "name": "grazulex/laravel-apiroute",
+    "description": "Complete API versioning lifecycle management for Laravel",
+    "keywords": [
+        "laravel",
+        "api",
+        "versioning",
+        "api-version",
+        "deprecation",
+        "sunset",
+        "rfc-8594",
+        "rfc-7231"
+    ],
+    "homepage": "https://github.com/grazulex/laravel-apiroute",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jean-Marc Strauven",
+            "email": "jms@grazulex.be",
+            "homepage": "https://grazulex.be",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/contracts": "^12.0",
+        "illuminate/http": "^12.0",
+        "illuminate/routing": "^12.0",
+        "illuminate/support": "^12.0",
+        "nesbot/carbon": "^3.10"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.4",
+        "laravel/pint": "^1.22",
+        "orchestra/testbench": "^10.2",
+        "pestphp/pest": "^3.8",
+        "pestphp/pest-plugin-laravel": "^3.2",
+        "phpstan/phpstan": "^2.1",
+        "rector/rector": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Grazulex\\ApiRoute\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Grazulex\\ApiRoute\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "@clear",
+            "@prepare"
+        ],
+        "clear": "@php vendor/bin/testbench package:purge-skeleton --ansi",
+        "prepare": "@php vendor/bin/testbench package:discover --ansi",
+        "build": "@php vendor/bin/testbench workbench:build --ansi",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve --ansi"
+        ],
+        "lint": "pint -v",
+        "test:lint": "pint --test -v",
+        "test:types": "phpstan analyse",
+        "test:unit": "pest --colors=always",
+        "test": [
+            "@test:lint",
+            "@test:types",
+            "@test:unit"
+        ],
+        "full": [
+            "@test:lint",
+            "@test:types",
+            "@test:unit"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Grazulex\\ApiRoute\\ApiRouteServiceProvider"
+            ],
+            "aliases": {
+                "ApiRoute": "Grazulex\\ApiRoute\\Facades\\ApiRoute"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "support": {
+        "issues": "https://github.com/grazulex/laravel-apiroute/issues",
+        "source": "https://github.com/grazulex/laravel-apiroute",
+        "docs": "https://github.com/grazulex/laravel-apiroute#readme"
+    }
+}

@@ -1,0 +1,13 @@
+services:
+  php:
+    image: serversideup/php:8.3-cli
+    working_dir: /app
+    volumes:
+      - .:/app
+      - composer-cache:/root/.composer/cache
+    command: ["tail", "-f", "/dev/null"]
+    environment:
+      - COMPOSER_ALLOW_SUPERUSER=1
+
+volumes:
+  composer-cache:

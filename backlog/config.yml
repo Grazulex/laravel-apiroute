@@ -1,0 +1,39 @@
+project:
+  name: Laravel ApiRoute
+  createdAt: '2025-12-23T09:25:56.769Z'
+board:
+  columns:
+    - To Do
+    - In Progress
+    - Review
+    - Done
+  priorities:
+    - low
+    - medium
+    - high
+    - critical
+  completedStatuses:
+    - Done
+display:
+  dateFormat: yyyy-MM-dd HH:mm
+  zeroPaddedIds: true
+  theme: default
+search:
+  threshold: 0.3
+  maxResults: 50
+performance:
+  useIndex: true
+  rebuildIndexOnStart: false
+validations:
+  close:
+    check_subtasks: true
+    check_dependencies: true
+    check_blocked_by: true
+    check_acceptance_criteria: true
+    warn_missing_ai_review: true
+    warn_early_close: true
+    warn_late_close: true
+    warn_quick_close: 300
+    suggest_parent_close: true
+    notify_unblocked: true
+    allow_force: true

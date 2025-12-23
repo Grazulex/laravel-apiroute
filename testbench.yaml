@@ -1,0 +1,13 @@
+providers:
+  - Grazulex\ApiRoute\ApiRouteServiceProvider
+
+workbench:
+  start: /
+  user: 1
+  install: true
+  welcome: false
+  build:
+    - asset:publish
+    - migrate:fresh
+
+sync: []

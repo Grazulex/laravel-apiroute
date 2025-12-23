@@ -1,0 +1,17 @@
+.idea/
+.vscode/
+.phpunit.cache/
+.phpunit.result.cache
+build/
+composer.lock
+coverage/
+node_modules/
+phpstan.neon.bak
+phpunit.xml.bak
+vendor/
+.env
+.php-cs-fixer.cache
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
