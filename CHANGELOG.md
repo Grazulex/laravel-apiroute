@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.3](https://github.com/Grazulex/laravel-apiroute/releases/tag/v0.0.3) (2025-12-23)
+
+### Bug Fixes
+
+- improve JSON output and Link header generation ([c2b05c9](https://github.com/Grazulex/laravel-apiroute/commit/c2b05c95cb1ce1fbbeacc43fb4d0a6548feaceae))
+
+### Documentation
+
+- clean up CHANGELOG format ([c5138d8](https://github.com/Grazulex/laravel-apiroute/commit/c5138d86e546a523cf71a29ecff8e7c2732cfbd4))
 ## [0.0.2](https://github.com/Grazulex/laravel-apiroute/releases/tag/v0.0.2) (2025-12-23)
 
 ### Bug Fixes
