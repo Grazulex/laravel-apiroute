@@ -138,7 +138,7 @@ class ApiRouteManager
         $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
 
         Route::prefix($prefix)
-            ->middleware(['api', 'api.version', 'api.rateLimit'])
+            ->middleware($this->getMiddleware())
             ->group($definition->routes());
     }
 
@@ -153,7 +153,35 @@ class ApiRouteManager
         $prefix = $uriConfig['prefix'] ?? 'api';
 
         Route::prefix($prefix)
-            ->middleware(['api', 'api.version', 'api.rateLimit'])
+            ->middleware($this->getMiddleware())
             ->group($definition->routes());
+    }
+
+    /**
+     * Get the middleware stack for API routes.
+     *
+     * @return array<string>
+     */
+    private function getMiddleware(): array
+    {
+        $middleware = ['api', 'api.version', 'api.rateLimit'];
+
+        // Add fallback middleware if enabled
+        /** @var array<string, mixed> $fallbackConfig */
+        $fallbackConfig = $this->config['fallback'] ?? [];
+
+        if (($fallbackConfig['enabled'] ?? true) === true) {
+            $middleware[] = 'api.fallback';
+        }
+
+        // Add tracking middleware if enabled
+        /** @var array<string, mixed> $trackingConfig */
+        $trackingConfig = $this->config['tracking'] ?? [];
+
+        if (($trackingConfig['enabled'] ?? false) === true) {
+            $middleware[] = 'api.track';
+        }
+
+        return $middleware;
     }
 }

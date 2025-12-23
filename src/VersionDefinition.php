@@ -35,6 +35,25 @@ class VersionDefinition
         private readonly Closure $routes
     ) {}
 
+    /**
+     * Magic getter to allow property-style access for Collection::pluck().
+     *
+     * @return mixed
+     */
+    public function __get(string $property)
+    {
+        return match ($property) {
+            'name' => $this->name,
+            'status' => $this->status,
+            'deprecationDate' => $this->deprecationDate,
+            'sunsetDate' => $this->sunsetDate,
+            'successor' => $this->successor,
+            'documentationUrl' => $this->documentationUrl,
+            'rateLimit' => $this->rateLimit,
+            default => null,
+        };
+    }
+
     public function name(): string
     {
         return $this->name;
