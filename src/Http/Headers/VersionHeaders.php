@@ -6,11 +6,12 @@ namespace Grazulex\ApiRoute\Http\Headers;
 
 use Carbon\Carbon;
 use Grazulex\ApiRoute\VersionDefinition;
+use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class VersionHeaders
 {
-    public function addToResponse(Response $response, VersionDefinition $version): Response
+    public function addToResponse(Response $response, VersionDefinition $version, ?Request $request = null): Response
     {
         /** @var array<string, mixed> $config */
         $config = config('apiroute.headers', []);
@@ -50,7 +51,7 @@ class VersionHeaders
 
         // Link to successor
         if (($include['successor_link'] ?? true) && $version->successor() !== null) {
-            $successorUrl = $this->buildSuccessorUrl($version);
+            $successorUrl = $this->buildSuccessorUrl($version, $request);
             $response->headers->set(
                 'Link',
                 "<{$successorUrl}>; rel=\"successor-version\""
@@ -60,14 +61,38 @@ class VersionHeaders
         return $response;
     }
 
-    private function buildSuccessorUrl(VersionDefinition $version): string
+    private function buildSuccessorUrl(VersionDefinition $version, ?Request $request = null): string
     {
+        /** @var string $strategy */
+        $strategy = config('apiroute.strategy', 'uri');
+
         /** @var array<string, mixed> $config */
         $config = config('apiroute.strategies.uri', []);
 
         $prefix = $config['prefix'] ?? 'api';
         $successor = $version->successor();
+        $currentVersion = $version->name();
 
-        return url("{$prefix}/{$successor}");
+        // If we have a request and using URI strategy, build the full path
+        if ($request !== null && $strategy === 'uri') {
+            $currentPath = $request->path();
+
+            // Replace the current version in the path with the successor
+            $successorPath = preg_replace(
+                '/\b' . preg_quote($currentVersion, '/') . '\b/',
+                (string) $successor,
+                $currentPath,
+                1
+            );
+
+            if ($successorPath !== null && $successorPath !== $currentPath) {
+                return url($successorPath);
+            }
+        }
+
+        // Fallback to base URL with just prefix and successor
+        $baseUrl = $prefix !== '' ? "{$prefix}/{$successor}" : (string) $successor;
+
+        return url($baseUrl);
     }
 }

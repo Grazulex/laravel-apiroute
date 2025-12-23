@@ -55,6 +55,6 @@ class ResolveApiVersion
         $response = $next($request);
 
         // 7. Add version headers
-        return $this->headers->addToResponse($response, $version);
+        return $this->headers->addToResponse($response, $version, $request);
     }
 }

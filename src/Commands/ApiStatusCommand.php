@@ -42,8 +42,9 @@ class ApiStatusCommand extends Command
 
         $stats = $tracker->getAllStats(30);
         $totalRequests = array_sum(array_column($stats, 'total_requests'));
+        $isJson = $this->option('json');
 
-        $rows = $versions->map(function (VersionDefinition $version) use ($stats, $totalRequests): array {
+        $rows = $versions->map(function (VersionDefinition $version) use ($stats, $totalRequests, $isJson): array {
             $versionStats = $stats[$version->name()] ?? ['total_requests' => 0];
             $percentage = $totalRequests > 0
                 ? round(($versionStats['total_requests'] / $totalRequests) * 100, 1)
@@ -51,14 +52,14 @@ class ApiStatusCommand extends Command
 
             return [
                 'version' => $version->name(),
-                'status' => $this->formatStatus($version),
+                'status' => $isJson ? $this->formatStatusRaw($version) : $this->formatStatus($version),
                 'deprecated' => $version->deprecationDate()?->format('Y-m-d') ?? '-',
                 'sunset' => $version->sunsetDate()?->format('Y-m-d') ?? '-',
                 'usage' => $percentage . '%',
             ];
         })->toArray();
 
-        if ($this->option('json')) {
+        if ($isJson) {
             $this->line(json_encode($rows, JSON_PRETTY_PRINT) ?: '[]');
 
             return self::SUCCESS;
@@ -85,10 +86,11 @@ class ApiStatusCommand extends Command
         }
 
         $stats = $tracker->getStats($versionName, 30);
+        $isJson = $this->option('json');
 
         $details = [
             ['Name', $version->name()],
-            ['Status', $this->formatStatus($version)],
+            ['Status', $isJson ? $this->formatStatusRaw($version) : $this->formatStatus($version)],
             ['Deprecated', $version->deprecationDate()?->format('Y-m-d') ?? '-'],
             ['Sunset', $version->sunsetDate()?->format('Y-m-d') ?? '-'],
             ['Successor', $version->successor() ?? '-'],
@@ -97,7 +99,7 @@ class ApiStatusCommand extends Command
             ['Requests (30d)', number_format($stats['total_requests'] ?? 0)],
         ];
 
-        if ($this->option('json')) {
+        if ($isJson) {
             $this->line(json_encode($details, JSON_PRETTY_PRINT) ?: '[]');
 
             return self::SUCCESS;
@@ -115,6 +117,17 @@ class ApiStatusCommand extends Command
             $version->isDeprecated() => '<fg=yellow>deprecated</>',
             $version->isBeta() => '<fg=blue>beta</>',
             $version->isActive() => '<fg=green>active</>',
+            default => 'unknown',
+        };
+    }
+
+    private function formatStatusRaw(VersionDefinition $version): string
+    {
+        return match (true) {
+            $version->isSunset() => 'sunset',
+            $version->isDeprecated() => 'deprecated',
+            $version->isBeta() => 'beta',
+            $version->isActive() => 'active',
             default => 'unknown',
         };
     }
