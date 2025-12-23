@@ -12,6 +12,7 @@ use Grazulex\ApiRoute\Commands\ApiVersionCommand;
 use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Grazulex\ApiRoute\Http\Headers\VersionHeaders;
+use Grazulex\ApiRoute\Middleware\RateLimitApiVersion;
 use Grazulex\ApiRoute\Middleware\ResolveApiVersion;
 use Grazulex\ApiRoute\Middleware\TrackApiUsage;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
@@ -98,6 +99,7 @@ class ApiRouteServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
 
         $router->aliasMiddleware('api.version', ResolveApiVersion::class);
+        $router->aliasMiddleware('api.rateLimit', RateLimitApiVersion::class);
         $router->aliasMiddleware('api.track', TrackApiUsage::class);
     }
 

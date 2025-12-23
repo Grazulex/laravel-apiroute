@@ -41,7 +41,10 @@
     "autoload": {
         "psr-4": {
             "Grazulex\\ApiRoute\\": "src/"
-        }
+        },
+        "files": [
+            "src/Support/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

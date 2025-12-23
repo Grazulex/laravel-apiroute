@@ -138,7 +138,7 @@ class ApiRouteManager
         $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
 
         Route::prefix($prefix)
-            ->middleware(['api', 'api.version'])
+            ->middleware(['api', 'api.version', 'api.rateLimit'])
             ->group($definition->routes());
     }
 
@@ -153,7 +153,7 @@ class ApiRouteManager
         $prefix = $uriConfig['prefix'] ?? 'api';
 
         Route::prefix($prefix)
-            ->middleware(['api', 'api.version'])
+            ->middleware(['api', 'api.version', 'api.rateLimit'])
             ->group($definition->routes());
     }
 }
