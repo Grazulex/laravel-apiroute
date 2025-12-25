@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.0.0) (2025-12-25)
+
+### Chores
+
+- clean up development-only files for production ([c9f378a](https://github.com/Grazulex/laravel-apiroute/commit/c9f378ad71027e40b0e6a662d938be3f492846a7))
 ## [0.0.3](https://github.com/Grazulex/laravel-apiroute/releases/tag/v0.0.3) (2025-12-23)
 
 ### Bug Fixes
