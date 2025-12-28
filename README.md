@@ -36,6 +36,10 @@ Publish the configuration file:
 php artisan vendor:publish --tag="apiroute-config"
 ```
 
+## Documentation
+
+For complete documentation including migrations, advanced configuration, and usage tracking setup, please visit the **[Wiki](https://github.com/Grazulex/laravel-apiroute/wiki)**.
+
 ## Quick Start
 
 Define your API versions in `routes/api.php`:
