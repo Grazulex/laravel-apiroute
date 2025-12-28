@@ -27,21 +27,33 @@ class DatabaseTracker implements VersionTrackerInterface
 
         $isSuccess = $status >= 200 && $status < 400;
 
-        DB::table($table)->updateOrInsert(
-            [
-                'version' => $version,
-                'endpoint' => $endpoint,
-                'method' => $method,
-                'date' => $date,
-                'hour' => $hour,
-            ],
-            [
+        $conditions = [
+            'version' => $version,
+            'endpoint' => $endpoint,
+            'method' => $method,
+            'date' => $date,
+            'hour' => $hour,
+        ];
+
+        $affected = DB::table($table)
+            ->where($conditions)
+            ->update([
                 'requests_count' => DB::raw('requests_count + 1'),
                 'success_count' => DB::raw('success_count + ' . ($isSuccess ? 1 : 0)),
                 'error_count' => DB::raw('error_count + ' . ($isSuccess ? 0 : 1)),
                 'updated_at' => Carbon::now(),
-            ]
-        );
+            ]);
+
+        if ($affected === 0) {
+            DB::table($table)->insert([
+                ...$conditions,
+                'requests_count' => 1,
+                'success_count' => $isSuccess ? 1 : 0,
+                'error_count' => $isSuccess ? 0 : 1,
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now(),
+            ]);
+        }
     }
 
     /**
