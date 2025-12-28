@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.2.0) (2025-12-28)
+
+### Bug Fixes
+
+- resolve SQL upsert error in DatabaseTracker ([a0ba167](https://github.com/Grazulex/laravel-apiroute/commit/a0ba167f6e1eeaee513c1c379579707d33c2edb6))
 ## [1.1.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.1.0) (2025-12-28)
 
 ### Bug Fixes
