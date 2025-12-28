@@ -26,13 +26,19 @@ class TrackApiUsage
         $version = $request->attributes->get('api_version');
 
         if ($version !== null) {
+            // Extract primitive values before dispatch to avoid serialization issues
+            // The request contains VersionDefinition with Closure properties that cannot be serialized
+            $endpoint = $request->path();
+            $method = $request->method();
+            $statusCode = $response->getStatusCode();
+
             // Track after response for performance
-            dispatch(function () use ($request, $response, $version): void {
+            dispatch(function () use ($version, $endpoint, $method, $statusCode): void {
                 $this->tracker->track(
                     version: $version,
-                    endpoint: $request->path(),
-                    method: $request->method(),
-                    status: $response->getStatusCode()
+                    endpoint: $endpoint,
+                    method: $method,
+                    status: $statusCode
                 );
             })->afterResponse();
         }
