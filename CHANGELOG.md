@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.1.0) (2025-12-28)
+
+### Bug Fixes
+
+- resolve serialization error when tracking API usage ([2df297e](https://github.com/Grazulex/laravel-apiroute/commit/2df297e5f60119995a8f31496e96eb257accc23d))
 ## [1.0.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.0.0) (2025-12-25)
 
 ### Chores
