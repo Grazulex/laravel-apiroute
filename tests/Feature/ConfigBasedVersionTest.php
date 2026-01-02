@@ -127,14 +127,38 @@ test('version with sunset status from config', function () {
     expect(ApiRoute::getVersion('v0')->isSunset())->toBeTrue();
 });
 
-test('version with sunset date from config', function () {
+test('version with sunset date in past from config', function () {
     config([
         'apiroute.versions' => [
             'v1' => [
                 'routes' => null,
                 'status' => 'deprecated',
                 'deprecated_at' => '2024-01-01',
-                'sunset_at' => '2024-06-01',
+                'sunset_at' => '2024-06-01', // Past date
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    $version = ApiRoute::getVersion('v1');
+    expect($version)->not->toBeNull();
+    expect($version->deprecationDate())->not->toBeNull();
+    expect($version->sunsetDate())->not->toBeNull();
+    // When sunset date is in the past, status becomes Sunset (not Deprecated)
+    expect($version->isSunset())->toBeTrue();
+});
+
+test('version with future sunset date stays deprecated', function () {
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => null,
+                'status' => 'deprecated',
+                'deprecated_at' => '2024-01-01',
+                'sunset_at' => '2030-12-31', // Future date
             ],
         ],
     ]);
@@ -147,7 +171,7 @@ test('version with sunset date from config', function () {
     expect($version)->not->toBeNull();
     expect($version->isDeprecated())->toBeTrue();
     expect($version->sunsetDate())->not->toBeNull();
-    expect($version->isSunset())->toBeTrue(); // Past date should be sunset
+    expect($version->isSunset())->toBeFalse(); // Future date = not sunset yet
 });
 
 test('version with middleware from config', function () {
