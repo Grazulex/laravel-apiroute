@@ -29,9 +29,7 @@ class ApiRouteServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/apiroute.php', 'apiroute');
 
-        $this->app->singleton(ApiRouteManager::class, function (): ApiRouteManager {
-            return new ApiRouteManager();
-        });
+        $this->app->singleton(ApiRouteManager::class);
 
         $this->app->singleton(VersionResolverInterface::class, function ($app): VersionResolver {
             return new VersionResolver(
