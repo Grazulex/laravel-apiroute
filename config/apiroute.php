@@ -30,9 +30,11 @@ return [
     |     'v1' => [
     |         'routes' => base_path('routes/api/v1.php'),
     |         'middleware' => ['auth:sanctum'],
-    |         'status' => 'active',  // 'active', 'deprecated', 'sunset'
+    |         'name' => 'api.v1.',  // Route name prefix
+    |         'status' => 'active',  // 'active', 'beta', 'deprecated', 'sunset'
     |         'deprecated_at' => null,
     |         'sunset_at' => null,
+    |         'successor' => null,
     |     ],
     | ],
     |

@@ -187,9 +187,16 @@ class ApiRouteManager
 
         $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
 
-        Route::prefix($prefix)
-            ->middleware($this->getMiddleware())
-            ->group($definition->routes());
+        $routeGroup = Route::prefix($prefix)
+            ->middleware($this->getMiddleware($definition));
+
+        // Apply route name prefix if defined
+        $routeName = $definition->routeName();
+        if ($routeName !== null) {
+            $routeGroup->name($routeName);
+        }
+
+        $routeGroup->group($definition->routes());
     }
 
     /**
@@ -202,9 +209,16 @@ class ApiRouteManager
 
         $prefix = $uriConfig['prefix'] ?? 'api';
 
-        Route::prefix($prefix)
-            ->middleware($this->getMiddleware())
-            ->group($definition->routes());
+        $routeGroup = Route::prefix($prefix)
+            ->middleware($this->getMiddleware($definition));
+
+        // Apply route name prefix if defined
+        $routeName = $definition->routeName();
+        if ($routeName !== null) {
+            $routeGroup->name($routeName);
+        }
+
+        $routeGroup->group($definition->routes());
     }
 
     /**
@@ -212,7 +226,7 @@ class ApiRouteManager
      *
      * @return array<string>
      */
-    private function getMiddleware(): array
+    private function getMiddleware(?VersionDefinition $definition = null): array
     {
         $middleware = ['api', 'api.version', 'api.rateLimit'];
 
@@ -230,6 +244,17 @@ class ApiRouteManager
 
         if ($trackingEnabled === true) {
             $middleware[] = 'api.track';
+        }
+
+        // Merge with version-specific middleware from config
+        if ($definition !== null) {
+            $versionMiddleware = $definition->middlewares();
+            if (is_string($versionMiddleware)) {
+                $versionMiddleware = [$versionMiddleware];
+            }
+            if (! empty($versionMiddleware)) {
+                $middleware = array_merge($middleware, $versionMiddleware);
+            }
         }
 
         return $middleware;
