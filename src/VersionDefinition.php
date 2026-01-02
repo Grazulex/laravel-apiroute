@@ -98,6 +98,11 @@ class VersionDefinition
             $definition->rateLimit($config['rate_limit']);
         }
 
+        // Apply route name prefix if set
+        if (isset($config['name'])) {
+            $definition->name_($config['name']);
+        }
+
         return $definition;
     }
 
