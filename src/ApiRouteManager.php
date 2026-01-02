@@ -16,13 +16,61 @@ class ApiRouteManager
     /** @var Collection<string, VersionDefinition> */
     private Collection $versions;
 
-    /**
-     * @param  array<string, mixed>  $config
-     */
-    public function __construct(
-        private readonly array $config
-    ) {
+    private bool $configVersionsLoaded = false;
+
+    public function __construct()
+    {
         $this->versions = collect();
+    }
+
+    /**
+     * Boot the manager by loading versions from configuration.
+     *
+     * This method is called by the service provider on every application boot,
+     * ensuring versions are always available (including between tests).
+     */
+    public function boot(): void
+    {
+        if ($this->configVersionsLoaded) {
+            return;
+        }
+
+        $this->loadVersionsFromConfig();
+        $this->configVersionsLoaded = true;
+    }
+
+    /**
+     * Load and register versions defined in configuration.
+     *
+     * Note: We read config() dynamically here to support runtime config changes
+     * (especially important for testing scenarios).
+     */
+    private function loadVersionsFromConfig(): void
+    {
+        /** @var array<string, array<string, mixed>> $versions */
+        $versions = config('apiroute.versions', []);
+
+        foreach ($versions as $versionName => $versionConfig) {
+            if ($this->versions->has($versionName)) {
+                continue;
+            }
+
+            $definition = VersionDefinition::fromConfig($versionName, $versionConfig);
+            $this->versions->put($versionName, $definition);
+            $this->registerRoutes($definition);
+            event(new VersionCreated($definition));
+        }
+    }
+
+    /**
+     * Reset the manager state.
+     *
+     * This is useful for testing scenarios where you need to reload versions.
+     */
+    public function reset(): void
+    {
+        $this->versions = collect();
+        $this->configVersionsLoaded = false;
     }
 
     /**
@@ -114,11 +162,13 @@ class ApiRouteManager
 
     /**
      * Register routes for a version definition.
+     *
+     * Note: We read config() dynamically to support runtime config changes.
      */
     private function registerRoutes(VersionDefinition $definition): void
     {
         /** @var string $strategy */
-        $strategy = $this->config['strategy'] ?? 'uri';
+        $strategy = config('apiroute.strategy', 'uri');
 
         if ($strategy === 'uri') {
             $this->registerUriRoutes($definition);
@@ -133,7 +183,7 @@ class ApiRouteManager
     private function registerUriRoutes(VersionDefinition $definition): void
     {
         /** @var array<string, mixed> $uriConfig */
-        $uriConfig = $this->config['strategies']['uri'] ?? [];
+        $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
 
@@ -148,7 +198,7 @@ class ApiRouteManager
     private function registerNonUriRoutes(VersionDefinition $definition): void
     {
         /** @var array<string, mixed> $uriConfig */
-        $uriConfig = $this->config['strategies']['uri'] ?? [];
+        $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = $uriConfig['prefix'] ?? 'api';
 
@@ -167,18 +217,18 @@ class ApiRouteManager
         $middleware = ['api', 'api.version', 'api.rateLimit'];
 
         // Add fallback middleware if enabled
-        /** @var array<string, mixed> $fallbackConfig */
-        $fallbackConfig = $this->config['fallback'] ?? [];
+        /** @var bool $fallbackEnabled */
+        $fallbackEnabled = config('apiroute.fallback.enabled', true);
 
-        if (($fallbackConfig['enabled'] ?? true) === true) {
+        if ($fallbackEnabled === true) {
             $middleware[] = 'api.fallback';
         }
 
         // Add tracking middleware if enabled
-        /** @var array<string, mixed> $trackingConfig */
-        $trackingConfig = $this->config['tracking'] ?? [];
+        /** @var bool $trackingEnabled */
+        $trackingEnabled = config('apiroute.tracking.enabled', false);
 
-        if (($trackingConfig['enabled'] ?? false) === true) {
+        if ($trackingEnabled === true) {
             $middleware[] = 'api.track';
         }
 

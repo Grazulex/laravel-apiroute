@@ -29,20 +29,11 @@ class ApiRouteServiceProvider extends ServiceProvider
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/apiroute.php', 'apiroute');
 
-        $this->app->singleton(ApiRouteManager::class, function ($app): ApiRouteManager {
-            /** @var array<string, mixed> $config */
-            $config = $app['config']['apiroute'];
-
-            return new ApiRouteManager($config);
-        });
+        $this->app->singleton(ApiRouteManager::class);
 
         $this->app->singleton(VersionResolverInterface::class, function ($app): VersionResolver {
-            /** @var array<string, mixed> $config */
-            $config = $app['config']['apiroute'];
-
             return new VersionResolver(
-                $app->make(ApiRouteManager::class),
-                $config
+                $app->make(ApiRouteManager::class)
             );
         });
 
@@ -92,6 +83,11 @@ class ApiRouteServiceProvider extends ServiceProvider
 
         $this->registerMiddleware();
         $this->registerMacros();
+
+        // Boot the API route manager to load versions from configuration
+        // This is called on every application boot, ensuring versions
+        // are available even between tests
+        $this->app->make(ApiRouteManager::class)->boot();
     }
 
     private function registerMiddleware(): void

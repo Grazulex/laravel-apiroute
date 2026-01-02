@@ -36,6 +36,72 @@ class VersionDefinition
     ) {}
 
     /**
+     * Create a VersionDefinition from configuration array.
+     *
+     * @param  array<string, mixed>  $config
+     */
+    public static function fromConfig(string $name, array $config): self
+    {
+        $routeFile = $config['routes'] ?? null;
+
+        $routes = function () use ($routeFile): void {
+            if ($routeFile !== null && file_exists($routeFile)) {
+                require $routeFile;
+            }
+        };
+
+        $definition = new self($name, $routes);
+
+        // Apply middleware if defined
+        if (isset($config['middleware'])) {
+            $definition->middleware($config['middleware']);
+        }
+
+        // Apply status
+        $status = $config['status'] ?? 'active';
+        match ($status) {
+            'active' => $definition->current(),
+            'beta' => $definition->beta(),
+            'deprecated' => $definition->deprecated($config['deprecated_at'] ?? now()),
+            'sunset' => $definition->status = VersionStatus::Sunset,
+            default => $definition->current(),
+        };
+
+        // Apply dates if set (using array_key_exists to handle null values properly)
+        if (array_key_exists('deprecated_at', $config) && $config['deprecated_at'] !== null) {
+            /** @var string $deprecatedAt */
+            $deprecatedAt = $config['deprecated_at'];
+            $definition->deprecationDate = Carbon::parse($deprecatedAt);
+            if ($definition->status === VersionStatus::Active) {
+                $definition->status = VersionStatus::Deprecated;
+            }
+        }
+
+        if (array_key_exists('sunset_at', $config) && $config['sunset_at'] !== null) {
+            /** @var string $sunsetAt */
+            $sunsetAt = $config['sunset_at'];
+            $definition->sunset($sunsetAt);
+        }
+
+        // Apply successor if set
+        if (isset($config['successor'])) {
+            $definition->setSuccessor($config['successor']);
+        }
+
+        // Apply documentation URL if set
+        if (isset($config['documentation'])) {
+            $definition->documentation($config['documentation']);
+        }
+
+        // Apply rate limit if set
+        if (isset($config['rate_limit'])) {
+            $definition->rateLimit($config['rate_limit']);
+        }
+
+        return $definition;
+    }
+
+    /**
      * Magic getter to allow property-style access for Collection::pluck().
      *
      * @return mixed
