@@ -18,12 +18,8 @@ class ApiRouteManager
 
     private bool $configVersionsLoaded = false;
 
-    /**
-     * @param  array<string, mixed>  $config
-     */
-    public function __construct(
-        private readonly array $config
-    ) {
+    public function __construct()
+    {
         $this->versions = collect();
     }
 

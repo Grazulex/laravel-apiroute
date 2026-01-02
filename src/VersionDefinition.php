@@ -67,16 +67,20 @@ class VersionDefinition
             default => $definition->current(),
         };
 
-        // Apply dates if set
-        if (isset($config['deprecated_at']) && $config['deprecated_at'] !== null) {
-            $definition->deprecationDate = Carbon::parse($config['deprecated_at']);
+        // Apply dates if set (using array_key_exists to handle null values properly)
+        if (array_key_exists('deprecated_at', $config) && $config['deprecated_at'] !== null) {
+            /** @var string $deprecatedAt */
+            $deprecatedAt = $config['deprecated_at'];
+            $definition->deprecationDate = Carbon::parse($deprecatedAt);
             if ($definition->status === VersionStatus::Active) {
                 $definition->status = VersionStatus::Deprecated;
             }
         }
 
-        if (isset($config['sunset_at']) && $config['sunset_at'] !== null) {
-            $definition->sunset($config['sunset_at']);
+        if (array_key_exists('sunset_at', $config) && $config['sunset_at'] !== null) {
+            /** @var string $sunsetAt */
+            $sunsetAt = $config['sunset_at'];
+            $definition->sunset($sunsetAt);
         }
 
         // Apply successor if set
