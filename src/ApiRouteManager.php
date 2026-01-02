@@ -166,11 +166,13 @@ class ApiRouteManager
 
     /**
      * Register routes for a version definition.
+     *
+     * Note: We read config() dynamically to support runtime config changes.
      */
     private function registerRoutes(VersionDefinition $definition): void
     {
         /** @var string $strategy */
-        $strategy = $this->config['strategy'] ?? 'uri';
+        $strategy = config('apiroute.strategy', 'uri');
 
         if ($strategy === 'uri') {
             $this->registerUriRoutes($definition);
@@ -185,7 +187,7 @@ class ApiRouteManager
     private function registerUriRoutes(VersionDefinition $definition): void
     {
         /** @var array<string, mixed> $uriConfig */
-        $uriConfig = $this->config['strategies']['uri'] ?? [];
+        $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
 
@@ -200,7 +202,7 @@ class ApiRouteManager
     private function registerNonUriRoutes(VersionDefinition $definition): void
     {
         /** @var array<string, mixed> $uriConfig */
-        $uriConfig = $this->config['strategies']['uri'] ?? [];
+        $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = $uriConfig['prefix'] ?? 'api';
 
@@ -219,18 +221,18 @@ class ApiRouteManager
         $middleware = ['api', 'api.version', 'api.rateLimit'];
 
         // Add fallback middleware if enabled
-        /** @var array<string, mixed> $fallbackConfig */
-        $fallbackConfig = $this->config['fallback'] ?? [];
+        /** @var bool $fallbackEnabled */
+        $fallbackEnabled = config('apiroute.fallback.enabled', true);
 
-        if (($fallbackConfig['enabled'] ?? true) === true) {
+        if ($fallbackEnabled === true) {
             $middleware[] = 'api.fallback';
         }
 
         // Add tracking middleware if enabled
-        /** @var array<string, mixed> $trackingConfig */
-        $trackingConfig = $this->config['tracking'] ?? [];
+        /** @var bool $trackingEnabled */
+        $trackingEnabled = config('apiroute.tracking.enabled', false);
 
-        if (($trackingConfig['enabled'] ?? false) === true) {
+        if ($trackingEnabled === true) {
             $middleware[] = 'api.track';
         }
 

@@ -37,12 +37,8 @@ class ApiRouteServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(VersionResolverInterface::class, function ($app): VersionResolver {
-            /** @var array<string, mixed> $config */
-            $config = $app['config']['apiroute'];
-
             return new VersionResolver(
-                $app->make(ApiRouteManager::class),
-                $config
+                $app->make(ApiRouteManager::class)
             );
         });
 

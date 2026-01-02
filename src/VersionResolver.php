@@ -10,12 +10,8 @@ use Illuminate\Http\Request;
 
 class VersionResolver implements VersionResolverInterface
 {
-    /**
-     * @param  array<string, mixed>  $config
-     */
     public function __construct(
-        private readonly ApiRouteManager $manager,
-        private readonly array $config
+        private readonly ApiRouteManager $manager
     ) {}
 
     public function resolve(Request $request): ?VersionDefinition
@@ -45,7 +41,9 @@ class VersionResolver implements VersionResolverInterface
 
     public function getRequestedVersion(Request $request): ?string
     {
-        $strategy = DetectionStrategy::from($this->config['strategy'] ?? 'uri');
+        /** @var string $strategyValue */
+        $strategyValue = config('apiroute.strategy', 'uri');
+        $strategy = DetectionStrategy::from($strategyValue);
 
         return match ($strategy) {
             DetectionStrategy::Uri => $this->resolveFromUri($request),
@@ -57,10 +55,6 @@ class VersionResolver implements VersionResolverInterface
 
     private function resolveFromUri(Request $request): ?string
     {
-        /** @var array<string, mixed> $uriConfig */
-        $uriConfig = $this->config['strategies']['uri'] ?? [];
-        $pattern = $uriConfig['pattern'] ?? 'v{version}';
-
         // Extract version from path (e.g., /api/v1/users -> v1)
         $path = $request->path();
         $segments = explode('/', $path);
@@ -76,18 +70,16 @@ class VersionResolver implements VersionResolverInterface
 
     private function resolveFromHeader(Request $request): ?string
     {
-        /** @var array<string, mixed> $headerConfig */
-        $headerConfig = $this->config['strategies']['header'] ?? [];
-        $headerName = $headerConfig['name'] ?? 'X-API-Version';
+        /** @var string $headerName */
+        $headerName = config('apiroute.strategies.header.name', 'X-API-Version');
 
         return $request->header($headerName);
     }
 
     private function resolveFromQuery(Request $request): ?string
     {
-        /** @var array<string, mixed> $queryConfig */
-        $queryConfig = $this->config['strategies']['query'] ?? [];
-        $paramName = $queryConfig['parameter'] ?? 'api_version';
+        /** @var string $paramName */
+        $paramName = config('apiroute.strategies.query.parameter', 'api_version');
 
         /** @var string|null */
         return $request->query($paramName);
@@ -95,9 +87,8 @@ class VersionResolver implements VersionResolverInterface
 
     private function resolveFromAccept(Request $request): ?string
     {
-        /** @var array<string, mixed> $acceptConfig */
-        $acceptConfig = $this->config['strategies']['accept'] ?? [];
-        $vendor = $acceptConfig['vendor'] ?? 'api';
+        /** @var string $vendor */
+        $vendor = config('apiroute.strategies.accept.vendor', 'api');
 
         $accept = $request->header('Accept', '');
 
@@ -113,7 +104,8 @@ class VersionResolver implements VersionResolverInterface
 
     private function getDefaultVersion(): ?VersionDefinition
     {
-        $default = $this->config['default_version'] ?? 'latest';
+        /** @var string $default */
+        $default = config('apiroute.default_version', 'latest');
 
         if ($default === 'latest') {
             return $this->manager->versions()
@@ -126,14 +118,15 @@ class VersionResolver implements VersionResolverInterface
 
     private function handleFallback(string $requestedVersion): ?VersionDefinition
     {
-        /** @var array<string, mixed> $fallbackConfig */
-        $fallbackConfig = $this->config['fallback'] ?? [];
+        /** @var bool $fallbackEnabled */
+        $fallbackEnabled = config('apiroute.fallback.enabled', true);
 
-        if (($fallbackConfig['enabled'] ?? true) === false) {
+        if ($fallbackEnabled === false) {
             return null;
         }
 
-        $strategy = $fallbackConfig['strategy'] ?? 'previous';
+        /** @var string $strategy */
+        $strategy = config('apiroute.fallback.strategy', 'previous');
 
         return match ($strategy) {
             'previous' => $this->getPreviousVersion($requestedVersion),
