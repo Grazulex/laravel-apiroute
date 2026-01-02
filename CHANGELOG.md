@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.0) (2026-01-02)
+
+### ⚠ BREAKING CHANGES
+
+- add config-based version registration ([5b6f0e9](https://github.com/Grazulex/laravel-apiroute/commit/5b6f0e93aa39feb42d7c10b35b8869eb31527fa3))
+  - API versions should now be declared in config/apiroute.php
+
+### Features
+
+- add config-based version registration ([5b6f0e9](https://github.com/Grazulex/laravel-apiroute/commit/5b6f0e93aa39feb42d7c10b35b8869eb31527fa3))
+  - API versions should now be declared in config/apiroute.php
+
+### Bug Fixes
+
+- correct sunset date test expectations ([511b567](https://github.com/Grazulex/laravel-apiroute/commit/511b5674f2f50910fbff5ae02a1d90598347f281))
+- read config dynamically and improve tests ([897ccd2](https://github.com/Grazulex/laravel-apiroute/commit/897ccd25f0ad33b9c22e905b95d13c722762cea8))
+
+### Code Refactoring
+
+- remove unused config from ApiRouteManager constructor ([e891f2e](https://github.com/Grazulex/laravel-apiroute/commit/e891f2ec08101d404600f406f2a91118d0977b9b))
+- read all config dynamically instead of from constructor ([41f11e4](https://github.com/Grazulex/laravel-apiroute/commit/41f11e4798c31575f0fab2c9d42b1378c15555e2))
+
+### Documentation
+
+- update README for v2.0 config-based version registration ([2ee5781](https://github.com/Grazulex/laravel-apiroute/commit/2ee5781d9d6309a0e9115e7945ed81f2e53bb984))
+
+### Styles
+
+- simplify singleton registration for ApiRouteManager ([21489da](https://github.com/Grazulex/laravel-apiroute/commit/21489daa571480b9996b3265a566cd5555b9ab1d))
 ## [1.2.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v1.2.0) (2025-12-28)
 
 ### Bug Fixes
