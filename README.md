@@ -42,27 +42,37 @@ For complete documentation including migrations, advanced configuration, and usa
 
 ## Quick Start
 
-Define your API versions in `routes/api.php`:
+### 1. Define versions in config
 
 ```php
-use Grazulex\ApiRoute\Facades\ApiRoute;
+// config/apiroute.php
 
-// Version 1 - Deprecated, sunset planned
-ApiRoute::version('v1', function () {
-    Route::apiResource('users', App\Http\Controllers\Api\V1\UserController::class);
-})
-->deprecated('2025-06-01')
-->sunset('2025-12-01');
+'versions' => [
+    'v1' => [
+        'routes' => base_path('routes/api/v1.php'),
+        'status' => 'deprecated',
+        'deprecated_at' => '2025-06-01',
+        'sunset_at' => '2025-12-01',
+        'successor' => 'v2',
+    ],
+    'v2' => [
+        'routes' => base_path('routes/api/v2.php'),
+        'status' => 'active',
+    ],
+    'v3' => [
+        'routes' => base_path('routes/api/v3.php'),
+        'status' => 'beta',
+    ],
+],
+```
 
-// Version 2 - Current stable version
-ApiRoute::version('v2', function () {
-    Route::apiResource('users', App\Http\Controllers\Api\V2\UserController::class);
-})->current();
+### 2. Create route files
 
-// Version 3 - Beta/Preview
-ApiRoute::version('v3', function () {
-    Route::apiResource('users', App\Http\Controllers\Api\V3\UserController::class);
-})->beta();
+```php
+// routes/api/v2.php
+use Illuminate\Support\Facades\Route;
+
+Route::apiResource('users', App\Http\Controllers\Api\V2\UserController::class);
 ```
 
 ## Versioning Strategies
@@ -129,6 +139,20 @@ php artisan api:stats --period=30
 // config/apiroute.php
 
 return [
+    // API versions (v2.0+)
+    'versions' => [
+        'v1' => [
+            'routes' => base_path('routes/api/v1.php'),
+            'middleware' => [],
+            'status' => 'active',  // 'active', 'beta', 'deprecated', 'sunset'
+            'deprecated_at' => null,
+            'sunset_at' => null,
+            'successor' => null,
+            'documentation' => null,
+            'rate_limit' => null,
+        ],
+    ],
+
     // Detection strategy: 'uri', 'header', 'query', 'accept'
     'strategy' => 'uri',
 
