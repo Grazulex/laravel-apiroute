@@ -45,11 +45,14 @@ class ApiRouteManager
 
     /**
      * Load and register versions defined in configuration.
+     *
+     * Note: We read config() dynamically here to support runtime config changes
+     * (especially important for testing scenarios).
      */
     private function loadVersionsFromConfig(): void
     {
         /** @var array<string, array<string, mixed>> $versions */
-        $versions = $this->config['versions'] ?? [];
+        $versions = config('apiroute.versions', []);
 
         foreach ($versions as $versionName => $versionConfig) {
             if ($this->versions->has($versionName)) {

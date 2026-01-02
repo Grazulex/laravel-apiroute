@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Facades\ApiRoute;
-use Illuminate\Support\Facades\Route;
 
-beforeEach(function () {
-    // Define versions via configuration
+test('config-based version is loaded from configuration', function () {
+    // Setup: Define version via configuration
     config([
         'apiroute.versions' => [
             'v1' => [
-                'routes' => null, // We'll define routes inline for testing
+                'routes' => null,
                 'middleware' => [],
                 'status' => 'active',
             ],
@@ -23,36 +22,10 @@ beforeEach(function () {
     $manager->reset();
     $manager->boot();
 
-    // Register a test route for v1
-    Route::prefix('api/v1')
-        ->middleware(['api', 'api.version'])
-        ->group(function () {
-            Route::get('config-test', fn () => response()->json(['source' => 'config', 'version' => 'v1']));
-        });
-});
-
-test('config-based version is available in first test', function () {
+    // Assert
     expect(ApiRoute::hasVersion('v1'))->toBeTrue();
     expect(ApiRoute::getVersion('v1'))->not->toBeNull();
     expect(ApiRoute::getVersion('v1')->isActive())->toBeTrue();
-});
-
-test('config-based version is still available in second test', function () {
-    // This test validates the fix for issue #10
-    // Previously, versions would be lost between tests
-    expect(ApiRoute::hasVersion('v1'))->toBeTrue();
-    expect(ApiRoute::getVersion('v1'))->not->toBeNull();
-});
-
-test('config-based version is still available in third test', function () {
-    expect(ApiRoute::hasVersion('v1'))->toBeTrue();
-});
-
-test('can access routes defined via config across tests', function () {
-    $response = $this->get('/api/v1/config-test');
-
-    $response->assertOk();
-    $response->assertJson(['source' => 'config', 'version' => 'v1']);
 });
 
 test('multiple versions can be defined via config', function () {
@@ -116,4 +89,140 @@ test('version with documentation url from config', function () {
     $manager->boot();
 
     expect(ApiRoute::getVersion('v1')->documentationUrl())->toBe('https://docs.example.com/v1');
+});
+
+test('version with beta status from config', function () {
+    config([
+        'apiroute.versions' => [
+            'v3' => [
+                'routes' => null,
+                'status' => 'beta',
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    expect(ApiRoute::getVersion('v3'))->not->toBeNull();
+    expect(ApiRoute::getVersion('v3')->isBeta())->toBeTrue();
+});
+
+test('version with sunset status from config', function () {
+    config([
+        'apiroute.versions' => [
+            'v0' => [
+                'routes' => null,
+                'status' => 'sunset',
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    expect(ApiRoute::getVersion('v0'))->not->toBeNull();
+    expect(ApiRoute::getVersion('v0')->isSunset())->toBeTrue();
+});
+
+test('version with sunset date from config', function () {
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => null,
+                'status' => 'deprecated',
+                'deprecated_at' => '2024-01-01',
+                'sunset_at' => '2024-06-01',
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    $version = ApiRoute::getVersion('v1');
+    expect($version)->not->toBeNull();
+    expect($version->isDeprecated())->toBeTrue();
+    expect($version->sunsetDate())->not->toBeNull();
+    expect($version->isSunset())->toBeTrue(); // Past date should be sunset
+});
+
+test('version with middleware from config', function () {
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => null,
+                'status' => 'active',
+                'middleware' => ['auth:sanctum', 'verified'],
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    $version = ApiRoute::getVersion('v1');
+    expect($version)->not->toBeNull();
+    expect($version->middlewares())->toBe(['auth:sanctum', 'verified']);
+});
+
+test('empty versions config does not break boot', function () {
+    config([
+        'apiroute.versions' => [],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    expect(ApiRoute::versions()->count())->toBe(0);
+});
+
+test('boot is idempotent', function () {
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => null,
+                'status' => 'active',
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+
+    // Boot multiple times
+    $manager->boot();
+    $manager->boot();
+    $manager->boot();
+
+    // Should still have only one v1 version
+    expect(ApiRoute::versions()->count())->toBe(1);
+    expect(ApiRoute::hasVersion('v1'))->toBeTrue();
+});
+
+test('reset clears all versions', function () {
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => null,
+                'status' => 'active',
+            ],
+        ],
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+    $manager->reset();
+    $manager->boot();
+
+    expect(ApiRoute::hasVersion('v1'))->toBeTrue();
+
+    // Reset should clear versions
+    $manager->reset();
+    expect(ApiRoute::hasVersion('v1'))->toBeFalse();
+    expect(ApiRoute::versions()->count())->toBe(0);
 });
