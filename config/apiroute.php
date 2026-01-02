@@ -16,6 +16,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | API Versions
+    |--------------------------------------------------------------------------
+    |
+    | Define your API versions here. Each version should have a route file
+    | and optionally middleware, status, and lifecycle dates.
+    |
+    | This configuration-based approach ensures versions are properly
+    | registered on every application boot, including between tests.
+    |
+    | Example:
+    | 'versions' => [
+    |     'v1' => [
+    |         'routes' => base_path('routes/api/v1.php'),
+    |         'middleware' => ['auth:sanctum'],
+    |         'status' => 'active',  // 'active', 'deprecated', 'sunset'
+    |         'deprecated_at' => null,
+    |         'sunset_at' => null,
+    |     ],
+    | ],
+    |
+    */
+    'versions' => [],
+
+    /*
+    |--------------------------------------------------------------------------
     | Strategy Configuration
     |--------------------------------------------------------------------------
     */

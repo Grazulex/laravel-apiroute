@@ -16,6 +16,8 @@ class ApiRouteManager
     /** @var Collection<string, VersionDefinition> */
     private Collection $versions;
 
+    private bool $configVersionsLoaded = false;
+
     /**
      * @param  array<string, mixed>  $config
      */
@@ -23,6 +25,53 @@ class ApiRouteManager
         private readonly array $config
     ) {
         $this->versions = collect();
+    }
+
+    /**
+     * Boot the manager by loading versions from configuration.
+     *
+     * This method is called by the service provider on every application boot,
+     * ensuring versions are always available (including between tests).
+     */
+    public function boot(): void
+    {
+        if ($this->configVersionsLoaded) {
+            return;
+        }
+
+        $this->loadVersionsFromConfig();
+        $this->configVersionsLoaded = true;
+    }
+
+    /**
+     * Load and register versions defined in configuration.
+     */
+    private function loadVersionsFromConfig(): void
+    {
+        /** @var array<string, array<string, mixed>> $versions */
+        $versions = $this->config['versions'] ?? [];
+
+        foreach ($versions as $versionName => $versionConfig) {
+            if ($this->versions->has($versionName)) {
+                continue;
+            }
+
+            $definition = VersionDefinition::fromConfig($versionName, $versionConfig);
+            $this->versions->put($versionName, $definition);
+            $this->registerRoutes($definition);
+            event(new VersionCreated($definition));
+        }
+    }
+
+    /**
+     * Reset the manager state.
+     *
+     * This is useful for testing scenarios where you need to reload versions.
+     */
+    public function reset(): void
+    {
+        $this->versions = collect();
+        $this->configVersionsLoaded = false;
     }
 
     /**

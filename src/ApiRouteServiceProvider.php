@@ -92,6 +92,11 @@ class ApiRouteServiceProvider extends ServiceProvider
 
         $this->registerMiddleware();
         $this->registerMacros();
+
+        // Boot the API route manager to load versions from configuration
+        // This is called on every application boot, ensuring versions
+        // are available even between tests
+        $this->app->make(ApiRouteManager::class)->boot();
     }
 
     private function registerMiddleware(): void
