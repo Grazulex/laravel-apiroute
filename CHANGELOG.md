@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.1) (2026-01-02)
+
+### Bug Fixes
+
+- apply custom middleware and route name prefix from config ([5382d6d](https://github.com/Grazulex/laravel-apiroute/commit/5382d6dbe17b9ccdfd4d76c37385fe6a12653741))
 ## [2.0.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.0) (2026-01-02)
 
 ### ⚠ BREAKING CHANGES
