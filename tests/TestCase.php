@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grazulex\ApiRoute\Tests;
 
 use Grazulex\ApiRoute\ApiRouteServiceProvider;
+use Grazulex\ApiRoute\Support\ApiVersionContext;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -12,6 +13,11 @@ abstract class TestCase extends Orchestra
     protected function setUp(): void
     {
         parent::setUp();
+
+        // Clear the API version context between tests to avoid state leakage
+        if ($this->app->bound(ApiVersionContext::class)) {
+            $this->app->make(ApiVersionContext::class)->clear();
+        }
     }
 
     /**

@@ -12,15 +12,19 @@ use Grazulex\ApiRoute\Commands\ApiVersionCommand;
 use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Grazulex\ApiRoute\Http\Headers\VersionHeaders;
+use Grazulex\ApiRoute\Listeners\AddVersionHeadersToResponse;
 use Grazulex\ApiRoute\Middleware\FallbackRoute;
 use Grazulex\ApiRoute\Middleware\RateLimitApiVersion;
 use Grazulex\ApiRoute\Middleware\ResolveApiVersion;
 use Grazulex\ApiRoute\Middleware\TrackApiUsage;
+use Grazulex\ApiRoute\Support\ApiVersionContext;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
 use Grazulex\ApiRoute\Tracking\NullTracker;
 use Grazulex\ApiRoute\Tracking\RedisTracker;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class ApiRouteServiceProvider extends ServiceProvider
@@ -38,6 +42,8 @@ class ApiRouteServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(VersionHeaders::class);
+
+        $this->app->singleton(ApiVersionContext::class);
 
         $this->app->singleton(VersionTrackerInterface::class, function ($app): VersionTrackerInterface {
             /** @var array<string, mixed> $trackingConfig */
@@ -83,11 +89,18 @@ class ApiRouteServiceProvider extends ServiceProvider
 
         $this->registerMiddleware();
         $this->registerMacros();
+        $this->registerEventListeners();
 
         // Boot the API route manager to load versions from configuration
         // This is called on every application boot, ensuring versions
         // are available even between tests
         $this->app->make(ApiRouteManager::class)->boot();
+    }
+
+    private function registerEventListeners(): void
+    {
+        // Register listener to add version headers to ALL responses (including errors)
+        Event::listen(RequestHandled::class, AddVersionHeadersToResponse::class);
     }
 
     private function registerMiddleware(): void

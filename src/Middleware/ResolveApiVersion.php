@@ -9,7 +9,7 @@ use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
 use Grazulex\ApiRoute\Events\DeprecatedVersionAccessed;
 use Grazulex\ApiRoute\Exceptions\VersionNotFoundException;
 use Grazulex\ApiRoute\Exceptions\VersionSunsetException;
-use Grazulex\ApiRoute\Http\Headers\VersionHeaders;
+use Grazulex\ApiRoute\Support\ApiVersionContext;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,7 +17,7 @@ class ResolveApiVersion
 {
     public function __construct(
         private readonly VersionResolverInterface $resolver,
-        private readonly VersionHeaders $headers
+        private readonly ApiVersionContext $context
     ) {}
 
     /**
@@ -34,7 +34,16 @@ class ResolveApiVersion
             throw new VersionNotFoundException($requestedVersion);
         }
 
-        // 3. Check if sunset
+        // 3. Store version in context early for the response listener
+        // This ensures headers are added to ALL responses including error responses
+        // (including VersionSunsetException responses)
+        $this->context->set($version, $request);
+
+        // 4. Store the version in the request
+        $request->attributes->set('api_version', $version->name());
+        $request->attributes->set('api_version_definition', $version);
+
+        // 5. Check if sunset
         /** @var string $sunsetAction */
         $sunsetAction = config('apiroute.sunset.action', 'reject');
 
@@ -42,19 +51,13 @@ class ResolveApiVersion
             throw new VersionSunsetException($version);
         }
 
-        // 4. Store the version in the request
-        $request->attributes->set('api_version', $version->name());
-        $request->attributes->set('api_version_definition', $version);
-
-        // 5. Dispatch event if deprecated version
+        // 6. Dispatch event if deprecated version
         if ($version->isDeprecated()) {
             event(new DeprecatedVersionAccessed($version, $request));
         }
 
-        // 6. Execute the request
-        $response = $next($request);
-
-        // 7. Add version headers
-        return $this->headers->addToResponse($response, $version, $request);
+        // 7. Execute the request
+        // Headers will be added by the AddVersionHeadersToResponse listener
+        return $next($request);
     }
 }
