@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.3](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.3) (2026-01-03)
+
+### Bug Fixes
+
+- add fallback version resolution in response listener (#19) ([d03a2ee](https://github.com/Grazulex/laravel-apiroute/commit/d03a2ee7e6619f3e0eee771dbccaa47125624e96))
 ## [2.0.2](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.2) (2026-01-03)
 
 ### Bug Fixes
