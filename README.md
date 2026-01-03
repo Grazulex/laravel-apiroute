@@ -218,6 +218,10 @@ Please review [our security policy](SECURITY.md) on how to report security vulne
 - [Jean-Marc Strauven](https://github.com/Grazulex)
 - [All Contributors](../../contributors)
 
+## Thanks
+
+- [@maks-oleksyuk](https://github.com/maks-oleksyuk) - Bug reports and testing
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
