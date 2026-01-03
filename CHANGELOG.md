@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.2) (2026-01-03)
+
+### Bug Fixes
+
+- add API version headers to error responses ([81149b1](https://github.com/Grazulex/laravel-apiroute/commit/81149b1a5a7d87082048af5579be0203f7af2251))
 ## [2.0.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.1) (2026-01-02)
 
 ### Bug Fixes
