@@ -185,10 +185,19 @@ class ApiRouteManager
         /** @var array<string, mixed> $uriConfig */
         $uriConfig = config('apiroute.strategies.uri', []);
 
-        $prefix = ($uriConfig['prefix'] ?? 'api') . '/' . $definition->name();
+        $prefix = $uriConfig['prefix'] ?? 'api';
+        $domain = $uriConfig['domain'] ?? null;
 
-        $routeGroup = Route::prefix($prefix)
+        // Build prefix: include version name
+        $fullPrefix = $prefix !== '' ? $prefix . '/' . $definition->name() : $definition->name();
+
+        $routeGroup = Route::prefix($fullPrefix)
             ->middleware($this->getMiddleware($definition));
+
+        // Apply domain if configured (for subdomain-based routing)
+        if ($domain !== null && $domain !== '') {
+            $routeGroup->domain($domain);
+        }
 
         // Apply route name prefix if defined
         $routeName = $definition->routeName();
@@ -208,9 +217,15 @@ class ApiRouteManager
         $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = $uriConfig['prefix'] ?? 'api';
+        $domain = $uriConfig['domain'] ?? null;
 
         $routeGroup = Route::prefix($prefix)
             ->middleware($this->getMiddleware($definition));
+
+        // Apply domain if configured (for subdomain-based routing)
+        if ($domain !== null && $domain !== '') {
+            $routeGroup->domain($domain);
+        }
 
         // Apply route name prefix if defined
         $routeName = $definition->routeName();
