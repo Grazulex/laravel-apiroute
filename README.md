@@ -104,6 +104,25 @@ GET /api/users
 Accept: application/vnd.api.v2+json
 ```
 
+### Subdomain Routing
+
+For APIs served from a dedicated subdomain:
+
+```php
+// config/apiroute.php
+'strategies' => [
+    'uri' => [
+        'prefix' => '',                    // No /api prefix
+        'domain' => 'api.example.com',     // Your API subdomain
+    ],
+],
+```
+
+```
+GET https://api.example.com/v1/users
+GET https://api.example.com/v2/users
+```
+
 ## Automatic Headers
 
 On deprecated versions, responses include RFC-compliant headers:
