@@ -186,12 +186,30 @@ class ApiRouteManager
         $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = $uriConfig['prefix'] ?? 'api';
-        $domain = $uriConfig['domain'] ?? null;
+        $domains = $this->normalizeDomains($uriConfig['domain'] ?? null);
 
         // Build prefix: include version name
         $fullPrefix = $prefix !== '' ? $prefix . '/' . $definition->name() : $definition->name();
 
-        $routeGroup = Route::prefix($fullPrefix)
+        // If no domains configured, register routes without domain constraint
+        if (empty($domains)) {
+            $this->registerRoutesForDomain($definition, $fullPrefix, null);
+
+            return;
+        }
+
+        // Register routes for each configured domain
+        foreach ($domains as $domain) {
+            $this->registerRoutesForDomain($definition, $fullPrefix, $domain);
+        }
+    }
+
+    /**
+     * Register routes for a specific domain (or no domain if null).
+     */
+    private function registerRoutesForDomain(VersionDefinition $definition, string $prefix, ?string $domain): void
+    {
+        $routeGroup = Route::prefix($prefix)
             ->middleware($this->getMiddleware($definition));
 
         // Apply domain if configured (for subdomain-based routing)
@@ -217,23 +235,41 @@ class ApiRouteManager
         $uriConfig = config('apiroute.strategies.uri', []);
 
         $prefix = $uriConfig['prefix'] ?? 'api';
-        $domain = $uriConfig['domain'] ?? null;
+        $domains = $this->normalizeDomains($uriConfig['domain'] ?? null);
 
-        $routeGroup = Route::prefix($prefix)
-            ->middleware($this->getMiddleware($definition));
+        // If no domains configured, register routes without domain constraint
+        if (empty($domains)) {
+            $this->registerRoutesForDomain($definition, $prefix, null);
 
-        // Apply domain if configured (for subdomain-based routing)
-        if ($domain !== null && $domain !== '') {
-            $routeGroup->domain($domain);
+            return;
         }
 
-        // Apply route name prefix if defined
-        $routeName = $definition->routeName();
-        if ($routeName !== null) {
-            $routeGroup->name($routeName);
+        // Register routes for each configured domain
+        foreach ($domains as $domain) {
+            $this->registerRoutesForDomain($definition, $prefix, $domain);
+        }
+    }
+
+    /**
+     * Normalize domain configuration to an array.
+     *
+     * @param  string|array<string>|null  $domain
+     *
+     * @return array<string>
+     */
+    private function normalizeDomains(string|array|null $domain): array
+    {
+        if ($domain === null || $domain === '') {
+            return [];
         }
 
-        $routeGroup->group($definition->routes());
+        if (is_string($domain)) {
+            return [$domain];
+        }
+
+        // Filter out empty strings from array
+        /** @var array<int, string|null> $domain */
+        return array_values(array_filter($domain, fn (?string $d): bool => $d !== null && $d !== ''));
     }
 
     /**

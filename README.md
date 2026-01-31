@@ -123,6 +123,39 @@ GET https://api.example.com/v1/users
 GET https://api.example.com/v2/users
 ```
 
+### Multi-Domain Routing
+
+For resilience or redundancy scenarios where the same API is served on multiple domains:
+
+```php
+// config/apiroute.php
+'strategies' => [
+    'uri' => [
+        'prefix' => '',
+        'domain' => ['api.main.com', 'api.backup.com', 'api.proxy.com'],
+    ],
+],
+```
+
+All domains resolve to the same versioned routes:
+
+```
+GET https://api.main.com/v1/users
+GET https://api.backup.com/v1/users
+GET https://api.proxy.com/v1/users
+```
+
+Use environment variables for flexible configuration:
+
+```php
+'domain' => array_filter(array_map('trim', explode(',', env('API_DOMAINS', '')))),
+```
+
+```env
+# .env
+API_DOMAINS=api.main.com,api.backup.com,api.proxy.com
+```
+
 ## Automatic Headers
 
 On deprecated versions, responses include RFC-compliant headers:
@@ -240,6 +273,7 @@ Please review [our security policy](SECURITY.md) on how to report security vulne
 ## Thanks
 
 - [@maks-oleksyuk](https://github.com/maks-oleksyuk) - Bug reports and testing
+- [@sameededitz](https://github.com/sameededitz) - Feature request for subdomain and multi-domain routing
 
 ## License
 
