@@ -50,7 +50,7 @@ return [
         'uri' => [
             'prefix' => 'api',           // /api/v1/users (use '' for no prefix)
             'pattern' => 'v{version}',   // v1, v2, etc.
-            'domain' => null,            // null or 'api.example.com' for subdomain routing
+            'domain' => null,            // null, 'api.example.com', or ['api.main.com', 'api.backup.com']
         ],
         'header' => [
             'name' => 'X-API-Version',   // X-API-Version: 1
