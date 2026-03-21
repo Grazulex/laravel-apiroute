@@ -9,6 +9,7 @@ use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 class ApiStatusCommand extends Command
 {
@@ -79,7 +80,7 @@ class ApiStatusCommand extends Command
     {
         $version = $manager->getVersion($versionName);
 
-        if ($version === null) {
+        if (! $version instanceof VersionDefinition) {
             $this->error("Version '{$versionName}' not found.");
 
             return self::FAILURE;
@@ -133,9 +134,9 @@ class ApiStatusCommand extends Command
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<string, VersionDefinition>  $versions
+     * @param  Collection<string, VersionDefinition>  $versions
      */
-    private function displayWarnings($versions): void
+    private function displayWarnings(Collection $versions): void
     {
         $this->newLine();
 

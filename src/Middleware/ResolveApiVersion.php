@@ -10,6 +10,7 @@ use Grazulex\ApiRoute\Events\DeprecatedVersionAccessed;
 use Grazulex\ApiRoute\Exceptions\VersionNotFoundException;
 use Grazulex\ApiRoute\Exceptions\VersionSunsetException;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
+use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -29,7 +30,7 @@ class ResolveApiVersion
         $version = $this->resolver->resolve($request);
 
         // 2. Verify that the version exists
-        if ($version === null) {
+        if (! $version instanceof VersionDefinition) {
             $requestedVersion = $this->resolver->getRequestedVersion($request) ?? 'unknown';
             throw new VersionNotFoundException($requestedVersion);
         }

@@ -18,6 +18,7 @@ use Grazulex\ApiRoute\Middleware\RateLimitApiVersion;
 use Grazulex\ApiRoute\Middleware\ResolveApiVersion;
 use Grazulex\ApiRoute\Middleware\TrackApiUsage;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
+use Grazulex\ApiRoute\Support\VersionStatus;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
 use Grazulex\ApiRoute\Tracking\NullTracker;
 use Grazulex\ApiRoute\Tracking\RedisTracker;
@@ -26,9 +27,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 class ApiRouteServiceProvider extends ServiceProvider
 {
+    #[Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/apiroute.php', 'apiroute');
@@ -45,7 +48,7 @@ class ApiRouteServiceProvider extends ServiceProvider
 
         $this->app->singleton(ApiVersionContext::class);
 
-        $this->app->singleton(VersionTrackerInterface::class, function ($app): VersionTrackerInterface {
+        $this->app->singleton(VersionTrackerInterface::class, function (array $app): VersionTrackerInterface {
             /** @var array<string, mixed> $trackingConfig */
             $trackingConfig = $app['config']['apiroute.tracking'] ?? [];
 
@@ -126,7 +129,7 @@ class ApiRouteServiceProvider extends ServiceProvider
             return $this->attributes->get('api_version_definition');
         });
 
-        Request::macro('apiVersionStatus', function (): ?Support\VersionStatus {
+        Request::macro('apiVersionStatus', function (): ?VersionStatus {
             /** @var Request $this */
             $definition = $this->attributes->get('api_version_definition');
 

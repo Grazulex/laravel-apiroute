@@ -19,7 +19,6 @@ class ApiStatsCommand extends Command
 
     public function handle(ApiRouteManager $manager, VersionTrackerInterface $tracker): int
     {
-        /** @var int $period */
         $period = (int) $this->option('period');
 
         $specificVersion = $this->option('api-version');
@@ -35,7 +34,7 @@ class ApiStatsCommand extends Command
     {
         $stats = $tracker->getAllStats($period);
 
-        if (empty($stats)) {
+        if ($stats === []) {
             $this->warn('No usage statistics available.');
             $this->line('Make sure tracking is enabled in config/apiroute.php');
 
@@ -100,7 +99,7 @@ class ApiStatsCommand extends Command
     {
         $stats = $tracker->getStats($version, $period);
 
-        if (empty($stats) || ($stats['total_requests'] ?? 0) === 0) {
+        if ($stats === [] || ($stats['total_requests'] ?? 0) === 0) {
             $this->warn("No statistics available for version '{$version}'.");
 
             return self::SUCCESS;

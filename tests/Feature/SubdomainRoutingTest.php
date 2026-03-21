@@ -6,7 +6,7 @@ use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Facades\ApiRoute;
 use Illuminate\Support\Facades\Route;
 
-test('routes can be registered with subdomain', function () {
+test('routes can be registered with subdomain', function (): void {
     config([
         'apiroute.strategies.uri.domain' => 'api.example.com',
         'apiroute.strategies.uri.prefix' => '',
@@ -15,7 +15,7 @@ test('routes can be registered with subdomain', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -36,7 +36,7 @@ test('routes can be registered with subdomain', function () {
     expect($found)->toBeTrue();
 });
 
-test('routes work with empty prefix and subdomain', function () {
+test('routes work with empty prefix and subdomain', function (): void {
     config([
         'apiroute.strategies.uri.domain' => 'api.example.com',
         'apiroute.strategies.uri.prefix' => '',
@@ -45,7 +45,7 @@ test('routes work with empty prefix and subdomain', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -63,7 +63,7 @@ test('routes work with empty prefix and subdomain', function () {
     expect($found)->toBeTrue();
 });
 
-test('routes work with prefix and subdomain combined', function () {
+test('routes work with prefix and subdomain combined', function (): void {
     config([
         'apiroute.strategies.uri.domain' => 'api.example.com',
         'apiroute.strategies.uri.prefix' => 'v1-api',
@@ -72,7 +72,7 @@ test('routes work with prefix and subdomain combined', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -90,7 +90,7 @@ test('routes work with prefix and subdomain combined', function () {
     expect($found)->toBeTrue();
 });
 
-test('routes work without domain (backward compatibility)', function () {
+test('routes work without domain (backward compatibility)', function (): void {
     config([
         'apiroute.strategies.uri.domain' => null,
         'apiroute.strategies.uri.prefix' => 'api',
@@ -99,7 +99,7 @@ test('routes work without domain (backward compatibility)', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -117,7 +117,7 @@ test('routes work without domain (backward compatibility)', function () {
     expect($found)->toBeTrue();
 });
 
-test('empty string domain is treated as no domain', function () {
+test('empty string domain is treated as no domain', function (): void {
     config([
         'apiroute.strategies.uri.domain' => '',
         'apiroute.strategies.uri.prefix' => 'api',
@@ -126,7 +126,7 @@ test('empty string domain is treated as no domain', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -139,7 +139,7 @@ test('empty string domain is treated as no domain', function () {
     }
 });
 
-test('non-uri strategy also supports domain', function () {
+test('non-uri strategy also supports domain', function (): void {
     config([
         'apiroute.strategy' => 'header',
         'apiroute.strategies.uri.domain' => 'api.example.com',
@@ -149,7 +149,7 @@ test('non-uri strategy also supports domain', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -166,7 +166,7 @@ test('non-uri strategy also supports domain', function () {
     expect($found)->toBeTrue();
 });
 
-test('routes can be registered with multiple domains', function () {
+test('routes can be registered with multiple domains', function (): void {
     config([
         'apiroute.strategies.uri.domain' => ['api.main.com', 'api.backup.com', 'api.proxy.com'],
         'apiroute.strategies.uri.prefix' => '',
@@ -175,7 +175,7 @@ test('routes can be registered with multiple domains', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -195,7 +195,7 @@ test('routes can be registered with multiple domains', function () {
         ->and($foundDomains)->toContain('api.proxy.com');
 });
 
-test('multi-domain works with non-uri strategy', function () {
+test('multi-domain works with non-uri strategy', function (): void {
     config([
         'apiroute.strategy' => 'header',
         'apiroute.strategies.uri.domain' => ['api.main.com', 'api.backup.com'],
@@ -205,7 +205,7 @@ test('multi-domain works with non-uri strategy', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -223,7 +223,7 @@ test('multi-domain works with non-uri strategy', function () {
         ->and($foundDomains)->toContain('api.backup.com');
 });
 
-test('empty array domain is treated as no domain', function () {
+test('empty array domain is treated as no domain', function (): void {
     config([
         'apiroute.strategies.uri.domain' => [],
         'apiroute.strategies.uri.prefix' => 'api',
@@ -232,7 +232,7 @@ test('empty array domain is treated as no domain', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -245,7 +245,7 @@ test('empty array domain is treated as no domain', function () {
     }
 });
 
-test('array with empty strings is filtered', function () {
+test('array with empty strings is filtered', function (): void {
     config([
         'apiroute.strategies.uri.domain' => ['api.example.com', '', null],
         'apiroute.strategies.uri.prefix' => '',
@@ -254,7 +254,7 @@ test('array with empty strings is filtered', function () {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('users', fn () => response()->json(['version' => 'v1']));
     });
 

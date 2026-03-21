@@ -10,7 +10,7 @@ use Grazulex\ApiRoute\ApiRouteManager;
  * These tests verify that when the ServiceProvider boots with config-based
  * versions, routes are properly registered with middleware.
  */
-test('service provider boot loads config-based versions and registers routes', function () {
+test('service provider boot loads config-based versions and registers routes', function (): void {
     // First, ensure clean state
     $manager = app(ApiRouteManager::class);
     $manager->reset();
@@ -39,7 +39,7 @@ test('service provider boot loads config-based versions and registers routes', f
     $response->assertHeader('X-API-Version', 'v1');
 });
 
-test('routes registered via config have api.version middleware', function () {
+test('routes registered via config have api.version middleware', function (): void {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
@@ -73,7 +73,7 @@ test('routes registered via config have api.version middleware', function () {
     expect($found)->toBeTrue('Route v1/test should be registered');
 });
 
-test('multiple test runs maintain separate config states', function () {
+test('multiple test runs maintain separate config states', function (): void {
     // First run: v1 active
     $manager = app(ApiRouteManager::class);
     $manager->reset();

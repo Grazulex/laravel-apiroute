@@ -32,9 +32,9 @@
     "require-dev": {
         "larastan/larastan": "^3.4",
         "laravel/pint": "^1.22",
-        "orchestra/testbench": "^10.2",
-        "pestphp/pest": "^3.8",
-        "pestphp/pest-plugin-laravel": "^3.2",
+        "orchestra/testbench": "^10.2|^11.0",
+        "pestphp/pest": "^3.8|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.2|^4.0",
         "phpstan/phpstan": "^2.1",
         "rector/rector": "^2.0"
     },

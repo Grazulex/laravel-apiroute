@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Redis;
 
 class RedisTracker implements VersionTrackerInterface
 {
-    private const PREFIX = 'apiroute:stats:';
+    private const string PREFIX = 'apiroute:stats:';
 
     public function track(
         string $version,

@@ -6,24 +6,24 @@ use Carbon\Carbon;
 use Grazulex\ApiRoute\Support\VersionStatus;
 use Grazulex\ApiRoute\VersionDefinition;
 
-test('can create a version definition', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can create a version definition', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
 
     expect($definition->name())->toBe('v1');
     expect($definition->isActive())->toBeTrue();
     expect($definition->isUsable())->toBeTrue();
 });
 
-test('can mark version as current', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can mark version as current', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->current();
 
     expect($definition->status())->toBe(VersionStatus::Active);
     expect($definition->isActive())->toBeTrue();
 });
 
-test('can mark version as beta', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can mark version as beta', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->beta();
 
     expect($definition->status())->toBe(VersionStatus::Beta);
@@ -31,8 +31,8 @@ test('can mark version as beta', function () {
     expect($definition->isUsable())->toBeTrue();
 });
 
-test('can mark version as deprecated with string date', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can mark version as deprecated with string date', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->deprecated('2025-06-01');
 
     expect($definition->status())->toBe(VersionStatus::Deprecated);
@@ -41,16 +41,16 @@ test('can mark version as deprecated with string date', function () {
     expect($definition->deprecationDate()->format('Y-m-d'))->toBe('2025-06-01');
 });
 
-test('can mark version as deprecated with carbon date', function () {
+test('can mark version as deprecated with carbon date', function (): void {
     $date = Carbon::parse('2025-06-01');
-    $definition = new VersionDefinition('v1', fn () => null);
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->deprecated($date);
 
     expect($definition->deprecationDate())->toBe($date);
 });
 
-test('can set sunset date', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can set sunset date', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->deprecated('2025-06-01')->sunset('2099-12-01');
 
     expect($definition->sunsetDate())->toBeInstanceOf(Carbon::class);
@@ -58,44 +58,44 @@ test('can set sunset date', function () {
     expect($definition->isSunset())->toBeFalse(); // Date is in the future
 });
 
-test('is sunset when sunset date is in the past', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('is sunset when sunset date is in the past', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->sunset(Carbon::now()->subDay());
 
     expect($definition->isSunset())->toBeTrue();
     expect($definition->isUsable())->toBeFalse();
 });
 
-test('can set successor version', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can set successor version', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->setSuccessor('v2');
 
     expect($definition->successor())->toBe('v2');
 });
 
-test('can set documentation url', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can set documentation url', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->documentation('https://docs.example.com/v1');
 
     expect($definition->documentationUrl())->toBe('https://docs.example.com/v1');
 });
 
-test('can set rate limit', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can set rate limit', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->rateLimit(100);
 
     expect($definition->rateLimit_())->toBe(100);
 });
 
-test('can set middleware', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('can set middleware', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
     $definition->middleware(['auth', 'throttle']);
 
     expect($definition->middlewares())->toBe(['auth', 'throttle']);
 });
 
-test('fluent api returns self', function () {
-    $definition = new VersionDefinition('v1', fn () => null);
+test('fluent api returns self', function (): void {
+    $definition = new VersionDefinition('v1', fn (): null => null);
 
     expect($definition->current())->toBe($definition);
     expect($definition->beta())->toBe($definition);

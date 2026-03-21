@@ -108,10 +108,8 @@ class VersionDefinition
 
     /**
      * Magic getter to allow property-style access for Collection::pluck().
-     *
-     * @return mixed
      */
-    public function __get(string $property)
+    public function __get(string $property): mixed
     {
         return match ($property) {
             'name' => $this->name,
@@ -273,11 +271,7 @@ class VersionDefinition
             return true;
         }
 
-        if ($this->sunsetDate !== null && $this->sunsetDate->isPast()) {
-            return true;
-        }
-
-        return false;
+        return $this->sunsetDate instanceof Carbon && $this->sunsetDate->isPast();
     }
 
     public function isUsable(): bool

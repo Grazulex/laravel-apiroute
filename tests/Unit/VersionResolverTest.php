@@ -6,7 +6,7 @@ use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\VersionResolver;
 use Illuminate\Http\Request;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Set default config values
     config([
         'apiroute.strategy' => 'uri',
@@ -21,11 +21,11 @@ beforeEach(function () {
     ]);
 });
 
-test('resolves version from uri path', function () {
+test('resolves version from uri path', function (): void {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
-    $manager->version('v2', fn () => null);
+    $manager->version('v1', fn (): null => null);
+    $manager->version('v2', fn (): null => null);
 
     $resolver = new VersionResolver($manager);
 
@@ -36,13 +36,13 @@ test('resolves version from uri path', function () {
     expect($version->name())->toBe('v1');
 });
 
-test('resolves version from header', function () {
+test('resolves version from header', function (): void {
     config(['apiroute.strategy' => 'header']);
 
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
-    $manager->version('v2', fn () => null);
+    $manager->version('v1', fn (): null => null);
+    $manager->version('v2', fn (): null => null);
 
     $resolver = new VersionResolver($manager);
 
@@ -54,13 +54,13 @@ test('resolves version from header', function () {
     expect($version->name())->toBe('v2');
 });
 
-test('resolves version from query parameter', function () {
+test('resolves version from query parameter', function (): void {
     config(['apiroute.strategy' => 'query']);
 
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
-    $manager->version('v2', fn () => null);
+    $manager->version('v1', fn (): null => null);
+    $manager->version('v2', fn (): null => null);
 
     $resolver = new VersionResolver($manager);
 
@@ -71,13 +71,13 @@ test('resolves version from query parameter', function () {
     expect($version->name())->toBe('v1');
 });
 
-test('resolves version from accept header', function () {
+test('resolves version from accept header', function (): void {
     config(['apiroute.strategy' => 'accept']);
 
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
-    $manager->version('v2', fn () => null);
+    $manager->version('v1', fn (): null => null);
+    $manager->version('v2', fn (): null => null);
 
     $resolver = new VersionResolver($manager);
 
@@ -89,12 +89,12 @@ test('resolves version from accept header', function () {
     expect($version->name())->toBe('v2');
 });
 
-test('returns null for non-existent version', function () {
+test('returns null for non-existent version', function (): void {
     config(['apiroute.fallback.enabled' => false]);
 
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
+    $manager->version('v1', fn (): null => null);
 
     $resolver = new VersionResolver($manager);
 
@@ -104,10 +104,10 @@ test('returns null for non-existent version', function () {
     expect($version)->toBeNull();
 });
 
-test('falls back to previous version when enabled', function () {
+test('falls back to previous version when enabled', function (): void {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null)->current();
+    $manager->version('v1', fn (): null => null)->current();
     // v2 doesn't exist
 
     $resolver = new VersionResolver($manager);
@@ -119,11 +119,11 @@ test('falls back to previous version when enabled', function () {
     expect($version->name())->toBe('v1');
 });
 
-test('returns default version when none specified', function () {
+test('returns default version when none specified', function (): void {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
-    $manager->version('v1', fn () => null);
-    $manager->version('v2', fn () => null)->current();
+    $manager->version('v1', fn (): null => null);
+    $manager->version('v2', fn (): null => null)->current();
 
     $resolver = new VersionResolver($manager);
 
@@ -134,7 +134,7 @@ test('returns default version when none specified', function () {
     expect($version->name())->toBe('v2');
 });
 
-test('getRequestedVersion returns raw version string', function () {
+test('getRequestedVersion returns raw version string', function (): void {
     $manager = app(ApiRouteManager::class);
     $manager->reset();
 
