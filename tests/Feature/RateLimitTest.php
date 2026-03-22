@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Grazulex\ApiRoute\Facades\ApiRoute;
 use Illuminate\Support\Facades\Route;
 
-test('rate limit headers are added when rate limit is configured', function () {
-    ApiRoute::version('v1', function () {
+test('rate limit headers are added when rate limit is configured', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->rateLimit(100);
 
@@ -17,8 +17,8 @@ test('rate limit headers are added when rate limit is configured', function () {
     $response->assertHeader('X-RateLimit-Remaining');
 });
 
-test('rate limit is enforced after max attempts', function () {
-    ApiRoute::version('v1', function () {
+test('rate limit is enforced after max attempts', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->rateLimit(3);
 
@@ -34,8 +34,8 @@ test('rate limit is enforced after max attempts', function () {
     $response->assertHeader('Retry-After');
 });
 
-test('rate limit is not applied when not configured', function () {
-    ApiRoute::version('v1', function () {
+test('rate limit is not applied when not configured', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     });
 
@@ -45,12 +45,12 @@ test('rate limit is not applied when not configured', function () {
     expect($response->headers->has('X-RateLimit-Limit'))->toBeFalse();
 });
 
-test('different versions have separate rate limits', function () {
-    ApiRoute::version('v1', function () {
+test('different versions have separate rate limits', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     })->rateLimit(2);
 
-    ApiRoute::version('v2', function () {
+    ApiRoute::version('v2', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v2']));
     })->rateLimit(2);
 

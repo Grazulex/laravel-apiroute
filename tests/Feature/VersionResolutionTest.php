@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Grazulex\ApiRoute\Facades\ApiRoute;
 use Illuminate\Support\Facades\Route;
 
-test('resolves version from uri path', function () {
-    ApiRoute::version('v1', function () {
+test('resolves version from uri path', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 
@@ -17,13 +17,13 @@ test('resolves version from uri path', function () {
     $response->assertHeader('X-API-Version', 'v1');
 });
 
-test('resolves version from header', function () {
+test('resolves version from header', function (): void {
     config(['apiroute.strategy' => 'header']);
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
-    ApiRoute::version('v2', function () {
+    ApiRoute::version('v2', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v2']));
     });
 
@@ -33,8 +33,8 @@ test('resolves version from header', function () {
     $response->assertJson(['version' => 'v2']);
 });
 
-test('uses default version when none specified', function () {
-    ApiRoute::version('v1', function () {
+test('uses default version when none specified', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     })->current();
 
@@ -45,10 +45,10 @@ test('uses default version when none specified', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('returns 404 for non-existent version', function () {
+test('returns 404 for non-existent version', function (): void {
     config(['apiroute.fallback.enabled' => false]);
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['version' => 'v1']));
     });
 

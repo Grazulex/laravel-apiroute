@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool isSunset(string $version)
  * @method static bool isActive(string $version)
  *
- * @see \Grazulex\ApiRoute\ApiRouteManager
+ * @see ApiRouteManager
  */
 class ApiRoute extends Facade
 {

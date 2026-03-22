@@ -50,7 +50,7 @@ class ApiVersionContext
      */
     public function hasVersion(): bool
     {
-        return $this->version !== null;
+        return $this->version instanceof VersionDefinition;
     }
 
     /**

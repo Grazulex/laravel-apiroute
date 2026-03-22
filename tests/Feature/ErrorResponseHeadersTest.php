@@ -17,9 +17,9 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  *
  * @see https://github.com/Grazulex/laravel-apiroute/issues/16
  */
-test('adds version headers to 401 unauthorized response', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('protected', function () {
+test('adds version headers to 401 unauthorized response', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('protected', function (): void {
             throw new UnauthorizedHttpException('Bearer', 'Unauthenticated.');
         });
     });
@@ -31,9 +31,9 @@ test('adds version headers to 401 unauthorized response', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('adds version headers to 403 forbidden response', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('forbidden', function () {
+test('adds version headers to 403 forbidden response', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('forbidden', function (): void {
             throw new AccessDeniedHttpException('Access denied.');
         });
     });
@@ -45,9 +45,9 @@ test('adds version headers to 403 forbidden response', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('adds version headers to 404 not found response', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('missing', function () {
+test('adds version headers to 404 not found response', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('missing', function (): void {
             throw new NotFoundHttpException('Resource not found.');
         });
     });
@@ -59,10 +59,10 @@ test('adds version headers to 404 not found response', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('adds version headers to 500 server error response', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('error', function () {
-            throw new \RuntimeException('Internal server error.');
+test('adds version headers to 500 server error response', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('error', function (): void {
+            throw new RuntimeException('Internal server error.');
         });
     });
 
@@ -73,8 +73,8 @@ test('adds version headers to 500 server error response', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('adds version headers to 410 sunset response', function () {
-    ApiRoute::version('v1', function () {
+test('adds version headers to 410 sunset response', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->sunset(Carbon::now()->subDay());
 
@@ -85,9 +85,9 @@ test('adds version headers to 410 sunset response', function () {
     $response->assertHeader('X-API-Version-Status', 'sunset');
 });
 
-test('adds deprecation headers to error response for deprecated version', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('error', function () {
+test('adds deprecation headers to error response for deprecated version', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('error', function (): void {
             throw new NotFoundHttpException('Not found.');
         });
     })->deprecated('2025-06-01');
@@ -100,9 +100,9 @@ test('adds deprecation headers to error response for deprecated version', functi
     $response->assertHeader('Deprecation');
 });
 
-test('adds sunset header to error response when sunset date is set', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('error', function () {
+test('adds sunset header to error response when sunset date is set', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('error', function (): void {
             throw new NotFoundHttpException('Not found.');
         });
     })->deprecated('2025-06-01')->sunset('2099-12-01');
@@ -114,9 +114,9 @@ test('adds sunset header to error response when sunset date is set', function ()
     $response->assertHeader('Sunset');
 });
 
-test('adds successor link header to error response', function () {
-    ApiRoute::version('v1', function () {
-        Route::get('error', function () {
+test('adds successor link header to error response', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('error', function (): void {
             throw new NotFoundHttpException('Not found.');
         });
     })->deprecated('2025-06-01')->setSuccessor('v2');
@@ -128,11 +128,11 @@ test('adds successor link header to error response', function () {
     expect($response->headers->get('Link'))->toContain('successor-version');
 });
 
-test('version headers can be disabled for error responses', function () {
+test('version headers can be disabled for error responses', function (): void {
     config(['apiroute.headers.enabled' => false]);
 
-    ApiRoute::version('v1', function () {
-        Route::get('error', function () {
+    ApiRoute::version('v1', function (): void {
+        Route::get('error', function (): void {
             throw new NotFoundHttpException('Not found.');
         });
     });
@@ -144,10 +144,10 @@ test('version headers can be disabled for error responses', function () {
     expect($response->headers->has('X-API-Version-Status'))->toBeFalse();
 });
 
-test('does not add headers when version is not resolved', function () {
+test('does not add headers when version is not resolved', function (): void {
     // Request to a non-existent version - VersionNotFoundException is thrown
     // before the version can be stored in the context
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     });
 

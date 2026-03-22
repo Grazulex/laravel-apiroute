@@ -113,7 +113,7 @@ class ApiRouteManager
      */
     public function currentVersion(): ?VersionDefinition
     {
-        return $this->versions->first(fn (VersionDefinition $v) => $v->isActive());
+        return $this->versions->first(fn (VersionDefinition $v): bool => $v->isActive());
     }
 
     /**
@@ -192,7 +192,7 @@ class ApiRouteManager
         $fullPrefix = $prefix !== '' ? $prefix . '/' . $definition->name() : $definition->name();
 
         // If no domains configured, register routes without domain constraint
-        if (empty($domains)) {
+        if ($domains === []) {
             $this->registerRoutesForDomain($definition, $fullPrefix, null);
 
             return;
@@ -238,7 +238,7 @@ class ApiRouteManager
         $domains = $this->normalizeDomains($uriConfig['domain'] ?? null);
 
         // If no domains configured, register routes without domain constraint
-        if (empty($domains)) {
+        if ($domains === []) {
             $this->registerRoutesForDomain($definition, $prefix, null);
 
             return;
@@ -298,12 +298,12 @@ class ApiRouteManager
         }
 
         // Merge with version-specific middleware from config
-        if ($definition !== null) {
+        if ($definition instanceof VersionDefinition) {
             $versionMiddleware = $definition->middlewares();
             if (is_string($versionMiddleware)) {
                 $versionMiddleware = [$versionMiddleware];
             }
-            if (! empty($versionMiddleware)) {
+            if ($versionMiddleware !== []) {
                 $middleware = array_merge($middleware, $versionMiddleware);
             }
         }

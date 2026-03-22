@@ -7,6 +7,7 @@ namespace Grazulex\ApiRoute\Middleware;
 use Closure;
 use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Exceptions\VersionNotFoundException;
+use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -23,7 +24,7 @@ class EnforceApiVersion
     {
         $versionDefinition = $this->manager->getVersion($version);
 
-        if ($versionDefinition === null) {
+        if (! $versionDefinition instanceof VersionDefinition) {
             throw new VersionNotFoundException($version);
         }
 

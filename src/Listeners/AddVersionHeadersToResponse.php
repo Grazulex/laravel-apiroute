@@ -34,7 +34,7 @@ class AddVersionHeadersToResponse
         $request = $event->request;
         $version = $this->resolveVersion($request);
 
-        if ($version === null) {
+        if (! $version instanceof VersionDefinition) {
             return;
         }
 
@@ -75,7 +75,7 @@ class AddVersionHeadersToResponse
 
         // Verify the resolved version matches what was requested
         // to avoid adding headers for fallback versions on non-existent version requests
-        if ($resolved !== null) {
+        if ($resolved instanceof VersionDefinition) {
             $requestedVersion = $this->resolver->getRequestedVersion($request);
             if ($requestedVersion !== null && $resolved->name() === $requestedVersion) {
                 return $resolved;

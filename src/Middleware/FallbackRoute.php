@@ -10,6 +10,7 @@ use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class FallbackRoute
 {
@@ -57,7 +58,7 @@ class FallbackRoute
         // Try to find the route in a previous version
         $fallbackVersion = $this->findFallbackVersion($currentVersion, $path, $request->method());
 
-        if ($fallbackVersion === null) {
+        if (! $fallbackVersion instanceof VersionDefinition) {
             return $response;
         }
 
@@ -96,10 +97,8 @@ class FallbackRoute
         if ($strategy === 'latest') {
             // Try the current/latest active version
             $version = $this->manager->currentVersion();
-            if ($version !== null && $version->name() !== $currentVersion) {
-                if ($this->routeExistsInVersion($version, $path, $method)) {
-                    return $version;
-                }
+            if ($version instanceof VersionDefinition && $version->name() !== $currentVersion && $this->routeExistsInVersion($version, $path, $method)) {
+                return $version;
             }
         }
 
@@ -115,8 +114,10 @@ class FallbackRoute
         // Try previous versions from highest to lowest
         for ($i = $currentNumber - 1; $i >= 1; $i--) {
             $version = $this->manager->getVersion('v' . $i);
-
-            if ($version === null || ! $version->isUsable()) {
+            if (! $version instanceof VersionDefinition) {
+                continue;
+            }
+            if (! $version->isUsable()) {
                 continue;
             }
 
@@ -146,7 +147,7 @@ class FallbackRoute
             );
 
             return true;
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return false;
         }
     }

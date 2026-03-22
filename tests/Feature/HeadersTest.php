@@ -5,8 +5,8 @@ declare(strict_types=1);
 use Grazulex\ApiRoute\Facades\ApiRoute;
 use Illuminate\Support\Facades\Route;
 
-test('adds version header to response', function () {
-    ApiRoute::version('v1', function () {
+test('adds version header to response', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     });
 
@@ -16,8 +16,8 @@ test('adds version header to response', function () {
     $response->assertHeader('X-API-Version', 'v1');
 });
 
-test('adds status header to response', function () {
-    ApiRoute::version('v1', function () {
+test('adds status header to response', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->current();
 
@@ -27,8 +27,8 @@ test('adds status header to response', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('adds deprecation header for deprecated version', function () {
-    ApiRoute::version('v1', function () {
+test('adds deprecation header for deprecated version', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->deprecated('2025-06-01');
 
@@ -39,8 +39,8 @@ test('adds deprecation header for deprecated version', function () {
     $response->assertHeader('X-API-Version-Status', 'deprecated');
 });
 
-test('adds sunset header when sunset date is set', function () {
-    ApiRoute::version('v1', function () {
+test('adds sunset header when sunset date is set', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->deprecated('2025-06-01')->sunset('2099-12-01');
 
@@ -50,8 +50,8 @@ test('adds sunset header when sunset date is set', function () {
     $response->assertHeader('Sunset');
 });
 
-test('adds link header for successor version', function () {
-    ApiRoute::version('v1', function () {
+test('adds link header for successor version', function (): void {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->deprecated('2025-06-01')->setSuccessor('v2');
 
@@ -62,10 +62,10 @@ test('adds link header for successor version', function () {
     expect($response->headers->get('Link'))->toContain('successor-version');
 });
 
-test('headers can be disabled', function () {
+test('headers can be disabled', function (): void {
     config(['apiroute.headers.enabled' => false]);
 
-    ApiRoute::version('v1', function () {
+    ApiRoute::version('v1', function (): void {
         Route::get('test', fn () => response()->json(['ok' => true]));
     })->deprecated('2025-06-01');
 

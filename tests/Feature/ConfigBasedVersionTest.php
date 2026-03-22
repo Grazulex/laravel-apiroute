@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Facades\ApiRoute;
 
-test('config-based version is loaded from configuration', function () {
+test('config-based version is loaded from configuration', function (): void {
     // Setup: Define version via configuration
     config([
         'apiroute.versions' => [
@@ -28,7 +28,7 @@ test('config-based version is loaded from configuration', function () {
     expect(ApiRoute::getVersion('v1')->isActive())->toBeTrue();
 });
 
-test('multiple versions can be defined via config', function () {
+test('multiple versions can be defined via config', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -55,7 +55,7 @@ test('multiple versions can be defined via config', function () {
     expect(ApiRoute::getVersion('v1')->successor())->toBe('v2');
 });
 
-test('version with rate limit from config', function () {
+test('version with rate limit from config', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -73,7 +73,7 @@ test('version with rate limit from config', function () {
     expect(ApiRoute::getVersion('v1')->rateLimit_())->toBe(100);
 });
 
-test('version with documentation url from config', function () {
+test('version with documentation url from config', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -91,7 +91,7 @@ test('version with documentation url from config', function () {
     expect(ApiRoute::getVersion('v1')->documentationUrl())->toBe('https://docs.example.com/v1');
 });
 
-test('version with beta status from config', function () {
+test('version with beta status from config', function (): void {
     config([
         'apiroute.versions' => [
             'v3' => [
@@ -109,7 +109,7 @@ test('version with beta status from config', function () {
     expect(ApiRoute::getVersion('v3')->isBeta())->toBeTrue();
 });
 
-test('version with sunset status from config', function () {
+test('version with sunset status from config', function (): void {
     config([
         'apiroute.versions' => [
             'v0' => [
@@ -127,7 +127,7 @@ test('version with sunset status from config', function () {
     expect(ApiRoute::getVersion('v0')->isSunset())->toBeTrue();
 });
 
-test('version with sunset date in past from config', function () {
+test('version with sunset date in past from config', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -151,7 +151,7 @@ test('version with sunset date in past from config', function () {
     expect($version->isSunset())->toBeTrue();
 });
 
-test('version with future sunset date stays deprecated', function () {
+test('version with future sunset date stays deprecated', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -174,7 +174,7 @@ test('version with future sunset date stays deprecated', function () {
     expect($version->isSunset())->toBeFalse(); // Future date = not sunset yet
 });
 
-test('version with middleware from config', function () {
+test('version with middleware from config', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -194,7 +194,7 @@ test('version with middleware from config', function () {
     expect($version->middlewares())->toBe(['auth:sanctum', 'verified']);
 });
 
-test('empty versions config does not break boot', function () {
+test('empty versions config does not break boot', function (): void {
     config([
         'apiroute.versions' => [],
     ]);
@@ -206,7 +206,7 @@ test('empty versions config does not break boot', function () {
     expect(ApiRoute::versions()->count())->toBe(0);
 });
 
-test('boot is idempotent', function () {
+test('boot is idempotent', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -229,7 +229,7 @@ test('boot is idempotent', function () {
     expect(ApiRoute::hasVersion('v1'))->toBeTrue();
 });
 
-test('reset clears all versions', function () {
+test('reset clears all versions', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [

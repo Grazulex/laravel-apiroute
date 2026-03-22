@@ -7,6 +7,7 @@ namespace Grazulex\ApiRoute\Commands;
 use Carbon\Carbon;
 use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Events\VersionSunset;
+use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Console\Command;
 
 class ApiSunsetCommand extends Command
@@ -25,7 +26,7 @@ class ApiSunsetCommand extends Command
 
         $version = $manager->getVersion($versionName);
 
-        if ($version === null) {
+        if (! $version instanceof VersionDefinition) {
             $this->error("Version '{$versionName}' not found.");
 
             return self::FAILURE;

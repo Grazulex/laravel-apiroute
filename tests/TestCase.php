@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Grazulex\ApiRoute\Tests;
 
 use Grazulex\ApiRoute\ApiRouteServiceProvider;
+use Grazulex\ApiRoute\Facades\ApiRoute;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
@@ -36,12 +38,12 @@ abstract class TestCase extends Orchestra
     protected function getPackageAliases($app): array
     {
         return [
-            'ApiRoute' => \Grazulex\ApiRoute\Facades\ApiRoute::class,
+            'ApiRoute' => ApiRoute::class,
         ];
     }
 
     /**
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      */
     protected function defineEnvironment($app): void
     {

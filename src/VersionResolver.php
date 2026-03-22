@@ -24,14 +24,14 @@ class VersionResolver implements VersionResolverInterface
 
         $version = $this->manager->getVersion($versionString);
 
-        if ($version !== null) {
+        if ($version instanceof VersionDefinition) {
             return $version;
         }
 
         // Try with 'v' prefix if not found
         $version = $this->manager->getVersion('v' . $versionString);
 
-        if ($version !== null) {
+        if ($version instanceof VersionDefinition) {
             return $version;
         }
 
@@ -109,7 +109,7 @@ class VersionResolver implements VersionResolverInterface
 
         if ($default === 'latest') {
             return $this->manager->versions()
-                ->filter(fn (VersionDefinition $v) => $v->isActive())
+                ->filter(fn (VersionDefinition $v): bool => $v->isActive())
                 ->last();
         }
 
@@ -143,7 +143,7 @@ class VersionResolver implements VersionResolverInterface
         // Try to find the previous version
         for ($i = $versionNumber - 1; $i >= 1; $i--) {
             $version = $this->manager->getVersion('v' . $i);
-            if ($version !== null && $version->isUsable()) {
+            if ($version instanceof VersionDefinition && $version->isUsable()) {
                 return $version;
             }
         }

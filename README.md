@@ -22,7 +22,7 @@
 ## Requirements
 
 - PHP 8.3+
-- Laravel 12.x
+- Laravel 12.x or 13.x
 
 ## Installation
 

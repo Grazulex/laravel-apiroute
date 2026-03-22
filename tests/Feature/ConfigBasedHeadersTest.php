@@ -11,7 +11,7 @@ use Grazulex\ApiRoute\ApiRouteManager;
  * the appropriate headers (X-API-Version, Deprecation, Sunset, etc.) are
  * added to HTTP responses.
  */
-test('config-based version adds X-API-Version header', function () {
+test('config-based version adds X-API-Version header', function (): void {
     // Setup: Define version via configuration with a real route file
     config([
         'apiroute.versions' => [
@@ -37,7 +37,7 @@ test('config-based version adds X-API-Version header', function () {
     $response->assertHeader('X-API-Version-Status', 'active');
 });
 
-test('config-based deprecated version adds Deprecation header', function () {
+test('config-based deprecated version adds Deprecation header', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -64,7 +64,7 @@ test('config-based deprecated version adds Deprecation header', function () {
     expect($response->headers->get('Link'))->toContain('successor-version');
 });
 
-test('config-based version with sunset date adds Sunset header', function () {
+test('config-based version with sunset date adds Sunset header', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -87,7 +87,7 @@ test('config-based version with sunset date adds Sunset header', function () {
     $response->assertHeader('Sunset');
 });
 
-test('config-based version custom middleware is applied', function () {
+test('config-based version custom middleware is applied', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [
@@ -118,7 +118,7 @@ test('config-based version custom middleware is applied', function () {
     expect($found)->toBeTrue('Route v1/test should be registered');
 });
 
-test('config-based version route name prefix is applied', function () {
+test('config-based version route name prefix is applied', function (): void {
     config([
         'apiroute.versions' => [
             'v1' => [

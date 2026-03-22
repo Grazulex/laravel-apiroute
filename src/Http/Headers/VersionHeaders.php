@@ -34,7 +34,7 @@ class VersionHeaders
         }
 
         // Deprecation header (RFC 8594)
-        if (($include['deprecation'] ?? true) && $version->deprecationDate() !== null) {
+        if (($include['deprecation'] ?? true) && $version->deprecationDate() instanceof Carbon) {
             $response->headers->set(
                 'Deprecation',
                 $version->deprecationDate()->format(Carbon::RFC7231)
@@ -42,7 +42,7 @@ class VersionHeaders
         }
 
         // Sunset header (RFC 7231)
-        if (($include['sunset'] ?? true) && $version->sunsetDate() !== null) {
+        if (($include['sunset'] ?? true) && $version->sunsetDate() instanceof Carbon) {
             $response->headers->set(
                 'Sunset',
                 $version->sunsetDate()->format(Carbon::RFC7231)
@@ -74,7 +74,7 @@ class VersionHeaders
         $currentVersion = $version->name();
 
         // If we have a request and using URI strategy, build the full path
-        if ($request !== null && $strategy === 'uri') {
+        if ($request instanceof Request && $strategy === 'uri') {
             $currentPath = $request->path();
 
             // Replace the current version in the path with the successor

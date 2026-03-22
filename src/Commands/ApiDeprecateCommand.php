@@ -6,6 +6,7 @@ namespace Grazulex\ApiRoute\Commands;
 
 use Carbon\Carbon;
 use Grazulex\ApiRoute\ApiRouteManager;
+use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Console\Command;
 
 class ApiDeprecateCommand extends Command
@@ -26,7 +27,7 @@ class ApiDeprecateCommand extends Command
 
         $version = $manager->getVersion($versionName);
 
-        if ($version === null) {
+        if (! $version instanceof VersionDefinition) {
             $this->error("Version '{$versionName}' not found.");
 
             return self::FAILURE;
@@ -45,7 +46,7 @@ class ApiDeprecateCommand extends Command
         // Apply deprecation
         $version->deprecated($deprecationDate);
 
-        if ($sunsetDate !== null) {
+        if ($sunsetDate instanceof Carbon) {
             $version->sunset($sunsetDate);
         }
 
@@ -71,7 +72,7 @@ class ApiDeprecateCommand extends Command
         $code = "ApiRoute::version('{$versionName}', function () { ... })";
         $code .= "\n    ->deprecated('{$deprecationDate->format('Y-m-d')}')";
 
-        if ($sunsetDate !== null) {
+        if ($sunsetDate instanceof Carbon) {
             $code .= "\n    ->sunset('{$sunsetDate->format('Y-m-d')}')";
         }
 
