@@ -22,6 +22,7 @@ use Grazulex\ApiRoute\Support\VersionStatus;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
 use Grazulex\ApiRoute\Tracking\NullTracker;
 use Grazulex\ApiRoute\Tracking\RedisTracker;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
@@ -48,7 +49,7 @@ class ApiRouteServiceProvider extends ServiceProvider
 
         $this->app->singleton(ApiVersionContext::class);
 
-        $this->app->singleton(VersionTrackerInterface::class, function (array $app): VersionTrackerInterface {
+        $this->app->singleton(VersionTrackerInterface::class, function (Application $app): VersionTrackerInterface {
             /** @var array<string, mixed> $trackingConfig */
             $trackingConfig = $app['config']['apiroute.tracking'] ?? [];
 
