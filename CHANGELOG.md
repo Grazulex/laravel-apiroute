@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.1.1) (2026-08-07)
+
+### Bug Fixes
+
+- fix VersionTrackerInterface singleton $app type hint to prevent TypeError in Laravel 12/13 (#27)
 ## [2.0.3](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.0.3) (2026-01-03)
 
 ### Bug Fixes
