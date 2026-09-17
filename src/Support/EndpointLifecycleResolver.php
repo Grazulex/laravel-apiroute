@@ -142,6 +142,13 @@ final class EndpointLifecycleResolver
         // and has no parameters yet.
         $parameters = $context instanceof Route && $context->hasParameters() ? $context->parameters() : [];
 
+        // Only forward the parameters the successor route declares: anything
+        // else would be appended as a query string by the URL generator.
+        $successor = Router::getRoutes()->getByName($name);
+        if ($successor instanceof Route) {
+            $parameters = array_intersect_key($parameters, array_flip($successor->parameterNames()));
+        }
+
         try {
             return route($name, $parameters);
         } catch (UrlGenerationException $e) {

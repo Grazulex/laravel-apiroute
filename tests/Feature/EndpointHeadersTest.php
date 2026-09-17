@@ -113,6 +113,17 @@ test('parameterised successor route is generated with the current route paramete
         ->assertHeader('Link', '<http://localhost/api/v2/things/5>; rel="successor-version"');
 });
 
+test('current route parameters unused by the successor are not appended as a query string', function (): void {
+    Route::get('/api/v2/things', fn () => 'ok')->name('api.v2.things.index');
+    ApiRoute::version('v1', function (): void {
+        Route::get('things/{id}', fn (string $id) => response()->json(['id' => $id]))->deprecated(successor: 'api.v2.things.index');
+    });
+
+    $this->get('/api/v1/things/5')
+        ->assertOk()
+        ->assertHeader('Link', '<http://localhost/api/v2/things>; rel="successor-version"');
+});
+
 test('successor route missing a required parameter is logged and skipped', function (): void {
     Log::shouldReceive('warning')->once()->withArgs(fn (string $message): bool => str_contains($message, 'successor route cannot be generated'));
     Route::get('/api/v2/things/{id}', fn (string $id) => 'ok')->name('api.v2.things.show');
