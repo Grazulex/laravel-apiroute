@@ -18,6 +18,7 @@ use Grazulex\ApiRoute\Middleware\RateLimitApiVersion;
 use Grazulex\ApiRoute\Middleware\ResolveApiVersion;
 use Grazulex\ApiRoute\Middleware\TrackApiUsage;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
+use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\Support\VersionStatus;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
 use Grazulex\ApiRoute\Tracking\NullTracker;
@@ -25,6 +26,7 @@ use Grazulex\ApiRoute\Tracking\RedisTracker;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +50,8 @@ class ApiRouteServiceProvider extends ServiceProvider
         $this->app->singleton(VersionHeaders::class);
 
         $this->app->singleton(ApiVersionContext::class);
+
+        $this->app->singleton(EndpointLifecycleResolver::class);
 
         $this->app->singleton(VersionTrackerInterface::class, function (Application $app): VersionTrackerInterface {
             /** @var array<string, mixed> $trackingConfig */
@@ -142,6 +146,20 @@ class ApiRouteServiceProvider extends ServiceProvider
             $definition = $this->attributes->get('api_version_definition');
 
             return $definition?->isDeprecated() ?? false;
+        });
+
+        RoutingRoute::macro('deprecated', function (
+            ?string $since = null,
+            ?string $sunset = null,
+            ?string $successor = null,
+            ?string $docs = null,
+            ?string $reason = null,
+        ): RoutingRoute {
+            /** @var RoutingRoute $this */
+            $action = $this->getAction();
+            $action[EndpointLifecycleResolver::ACTION_KEY] = compact('since', 'sunset', 'successor', 'docs', 'reason');
+
+            return $this->setAction($action);
         });
     }
 }
