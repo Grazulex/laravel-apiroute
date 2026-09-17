@@ -12,12 +12,14 @@
 ## Features
 
 - **Multi-strategy versioning** - URI path, Header, Query parameter, or Accept header
-- **Automatic deprecation headers** - RFC 8594 (Deprecation) and RFC 7231 (Sunset) compliant
+- **Automatic deprecation headers** - `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers as RFC 7231 HTTP-dates
 - **Version lifecycle management** - Active, Deprecated, Sunset, Removed states
 - **Intelligent fallback** - Route fallback to previous versions when needed
 - **Artisan commands** - Scaffold, monitor, and manage API versions
 - **Usage tracking** - Optional analytics per API version
 - **Zero configuration start** - Works out of the box with sensible defaults
+- **Endpoint deprecation** - `#[Deprecated]` attribute or `->deprecated()` route macro with `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers and 410 sunset policy
+- **JSON:API** - error documents by content negotiation, version metadata for Laravel 13 JSON:API resources
 
 ## Requirements
 
@@ -169,6 +171,104 @@ X-API-Version: v1
 X-API-Version-Status: deprecated
 ```
 
+## Deprecating a single endpoint
+
+Beyond version-level deprecation, a single controller class, action, or route can be marked deprecated on its own, independently of the API version it belongs to.
+
+### Attribute
+
+```php
+use Grazulex\ApiRoute\Attributes\Deprecated;
+
+#[Deprecated(since: '2026-01-01', successor: '/api/v2/legacy', docs: 'https://docs.example.com/legacy')]
+class LegacyController
+{
+    #[Deprecated(sunset: '2026-06-01', successor: 'api.v2.things.index', reason: 'Use things v2')]
+    public function index()
+    {
+        // ...
+    }
+}
+```
+
+Method attributes override class attributes field by field; the macro overrides attributes.
+
+### Route macro
+
+```php
+Route::get('/api/v2/closure', fn () => response()->json(['ok' => true]))
+    ->deprecated(since: '2026-05-05', successor: '/api/v2/closure-v2');
+```
+
+### Headers
+
+| Header | When | Notes |
+| --- | --- | --- |
+| `Deprecation` | `since` is set | RFC 9745 header, emitted as an RFC 7231 HTTP-date (same format as the version headers) |
+| `Sunset` | `sunset` is set | RFC 8594 header, RFC 7231 HTTP-date |
+| `Link` | `successor` and/or `docs` set | `rel="successor-version"` and `rel="deprecation"` (RFC 9745) |
+| `X-API-Endpoint-Status` | endpoint is deprecated or sunset | `deprecated` or `sunset`, gated by `headers.include.endpoint_status` |
+
+`successor` is resolved in this order: a named route, a path starting with `/`, or an absolute URL. A named route is generated with the parameters of the current route (`things/{id}` can point to `api.v2.things.show`); when the URL cannot be generated, a warning is logged and no successor link is emitted.
+
+### Sunset policy
+
+Once `sunset` is reached, the endpoint is handled by the `api.endpoint-sunset` middleware following the same policy as versions: `apiroute.sunset.action` (`reject` by default) and the status code from `apiroute.sunset.status_code` (410 by default).
+
+This middleware is added automatically to routes registered inside `ApiRoute::version()` groups. Outside those groups, a deprecated route only gets the headers above; add `api.endpoint-sunset` to the route or group yourself to apply the 410 policy there.
+
+PHP 8.4's native `#[\Deprecated]` attribute can be used alongside `Grazulex\ApiRoute\Attributes\Deprecated` on the same class or method; they serve different purposes (IDE/runtime deprecation notice vs. HTTP lifecycle) and do not conflict.
+
+`php artisan api:status` lists deprecated endpoints (method, URI, version, dates, successor) in a dedicated table. With `--json`, the output keeps its historical shape (an object keyed by version); when deprecated endpoints exist, it becomes `{"versions": {...}, "deprecated_endpoints": [...]}`.
+
+## JSON:API
+
+When a request sends `Accept: application/vnd.api+json`, version and endpoint errors are rendered as [JSON:API error documents](https://jsonapi.org/format/#errors) instead of the plain JSON body.
+
+```http
+GET /api/v1/things
+Accept: application/vnd.api+json
+```
+
+```json
+{
+    "errors": [
+        {
+            "status": "410",
+            "code": "endpoint_sunset",
+            "title": "Endpoint sunset",
+            "detail": "Use things v2",
+            "links": {
+                "about": "https://docs.example.com/legacy",
+                "successor": "http://localhost/api/v2/things"
+            },
+            "meta": {
+                "sunset_at": "2020-01-01T00:00:00+00:00"
+            }
+        }
+    ]
+}
+```
+
+The error `code` is one of: `version_not_found`, `invalid_version`, `version_sunset`, `endpoint_sunset`.
+
+### Laravel 13 JSON:API resources
+
+The `InteractsWithApiVersion` trait adds version metadata to a `JsonApiResource` document:
+
+```php
+use Grazulex\ApiRoute\Http\Resources\InteractsWithApiVersion;
+use Illuminate\Http\Resources\JsonApi\JsonApiResource;
+
+class UserResource extends JsonApiResource
+{
+    use InteractsWithApiVersion;
+    // ...
+}
+```
+
+It merges a `meta.api` object (`version`, `status`, `deprecation`, `sunset`, `successor`) and, when a successor is resolvable, a top-level `links.successor` into the resource document. Endpoint-level deprecation takes precedence over version-level deprecation.
+
 ## Artisan Commands
 
 ```bash
@@ -230,6 +330,7 @@ return [
             'version' => true,
             'deprecation' => true,
             'sunset' => true,
+            'endpoint_status' => true,
         ],
     ],
 ];

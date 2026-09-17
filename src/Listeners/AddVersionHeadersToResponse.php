@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace Grazulex\ApiRoute\Listeners;
 
 use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
+use Grazulex\ApiRoute\Http\Headers\EndpointHeaders;
 use Grazulex\ApiRoute\Http\Headers\VersionHeaders;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
+use Grazulex\ApiRoute\Support\EndpointLifecycle;
+use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 
 /**
  * Listener that adds API version headers to all responses.
@@ -23,7 +27,9 @@ class AddVersionHeadersToResponse
     public function __construct(
         private readonly ApiVersionContext $context,
         private readonly VersionHeaders $headers,
-        private readonly VersionResolverInterface $resolver
+        private readonly VersionResolverInterface $resolver,
+        private readonly EndpointHeaders $endpointHeaders,
+        private readonly EndpointLifecycleResolver $lifecycles
     ) {}
 
     /**
@@ -34,12 +40,17 @@ class AddVersionHeadersToResponse
         $request = $event->request;
         $version = $this->resolveVersion($request);
 
-        if (! $version instanceof VersionDefinition) {
-            return;
+        if ($version instanceof VersionDefinition) {
+            // Add version headers to the response
+            $this->headers->addToResponse($event->response, $version, $request);
         }
 
-        // Add version headers to the response
-        $this->headers->addToResponse($event->response, $version, $request);
+        $lifecycle = $this->lifecycles->forRequest($request);
+
+        if ($lifecycle instanceof EndpointLifecycle) {
+            $route = $request->route();
+            $this->endpointHeaders->addToResponse($event->response, $lifecycle, $route instanceof Route ? $route : null);
+        }
     }
 
     /**

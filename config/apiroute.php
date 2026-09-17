@@ -120,6 +120,7 @@ return [
             'deprecation' => true,       // Deprecation (RFC 8594)
             'sunset' => true,            // Sunset (RFC 7231)
             'successor_link' => true,    // Link rel="successor-version"
+            'endpoint_status' => true,   // X-API-Endpoint-Status (deprecated|sunset)
         ],
     ],
 

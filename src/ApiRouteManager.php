@@ -308,6 +308,9 @@ class ApiRouteManager
             }
         }
 
+        // Endpoint-level sunset enforcement runs last, after version resolution
+        $middleware[] = 'api.endpoint-sunset';
+
         return $middleware;
     }
 }
