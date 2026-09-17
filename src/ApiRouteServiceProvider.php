@@ -11,6 +11,7 @@ use Grazulex\ApiRoute\Commands\ApiSunsetCommand;
 use Grazulex\ApiRoute\Commands\ApiVersionCommand;
 use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
+use Grazulex\ApiRoute\Http\Headers\EndpointHeaders;
 use Grazulex\ApiRoute\Http\Headers\VersionHeaders;
 use Grazulex\ApiRoute\Listeners\AddVersionHeadersToResponse;
 use Grazulex\ApiRoute\Middleware\FallbackRoute;
@@ -48,6 +49,8 @@ class ApiRouteServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(VersionHeaders::class);
+
+        $this->app->singleton(EndpointHeaders::class);
 
         $this->app->singleton(ApiVersionContext::class);
 
