@@ -61,30 +61,36 @@ final class EndpointLifecycleResolver
             return null;
         }
 
-        // Route::name() only sets the route's "as" action; the collection's
-        // name look-up table is otherwise refreshed lazily (e.g. on the first
-        // url()/route() call or when matching a real HTTP request). Force a
-        // refresh so fluently-named routes registered earlier in the same
-        // request/test are found reliably.
-        $routes = Router::getFacadeRoot()->getRoutes();
-        $routes->refreshNameLookups();
-
-        if ($routes->hasNamedRoute($successor)) {
-            return route($successor);
-        }
-
         if (str_starts_with($successor, '/')) {
             return url($successor);
         }
 
-        if ($this->looksLikeRouteName($successor)) {
-            if ($this->app->environment(['local', 'testing'])) {
-                throw new InvalidArgumentException("[apiroute] unknown successor route [{$successor}].");
+        if (! str_contains($successor, '://')) {
+            $routes = Router::getFacadeRoot()->getRoutes();
+
+            // Route::name() only sets the route's "as" action; the collection's
+            // name look-up table is otherwise refreshed lazily (e.g. on the
+            // first url()/route() call or when matching a real HTTP request).
+            // Refresh once, only on a miss, so a route named fluently earlier
+            // in the same request/test is still found without paying an
+            // O(routes) rebuild on every resolution.
+            if (! $routes->hasNamedRoute($successor)) {
+                $routes->refreshNameLookups();
             }
 
-            Log::warning('[apiroute] unknown successor route', ['successor' => $successor]);
+            if ($routes->hasNamedRoute($successor)) {
+                return route($successor);
+            }
 
-            return null;
+            if ($this->looksLikeRouteName($successor)) {
+                if ($this->app->environment(['local', 'testing'])) {
+                    throw new InvalidArgumentException("[apiroute] unknown successor route [{$successor}].");
+                }
+
+                Log::warning('[apiroute] unknown successor route', ['successor' => $successor]);
+
+                return null;
+            }
         }
 
         return $successor;
