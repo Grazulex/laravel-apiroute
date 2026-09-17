@@ -7,6 +7,7 @@ use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\Tests\Support\Controllers\DeprecatedActionController;
 use Grazulex\ApiRoute\Tests\Support\Controllers\DeprecatedClassController;
 use Grazulex\ApiRoute\Tests\Support\Controllers\PlainController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
@@ -78,6 +79,24 @@ test('resolves a named route successor', function (): void {
     $lifecycle = EndpointLifecycle::fromArray(['successor' => 'api.v2.things.index']);
 
     expect($this->resolver->resolveSuccessorUrl($lifecycle))->toBe('http://localhost/api/v2/things');
+});
+
+test('generates a named successor route with the parameters of the context route', function (): void {
+    Route::get('/api/v2/things/{id}', fn () => 'ok')->name('api.v2.things.show');
+    $context = Route::get('/api/v1/things/{id}', fn () => 'ok');
+    $context->bind(Request::create('/api/v1/things/7'));
+    $lifecycle = EndpointLifecycle::fromArray(['successor' => 'api.v2.things.show']);
+
+    expect($this->resolver->resolveSuccessorUrl($lifecycle, $context))->toBe('http://localhost/api/v2/things/7');
+});
+
+test('logs and returns null when the successor route needs parameters the context lacks', function (): void {
+    Log::shouldReceive('warning')->once()->withArgs(fn (string $message, array $context): bool => str_contains($message, 'successor route cannot be generated') && $context['successor'] === 'api.v2.things.show');
+    Route::get('/api/v2/things/{id}', fn () => 'ok')->name('api.v2.things.show');
+    $context = Route::get('/api/v1/things', fn () => 'ok');
+    $lifecycle = EndpointLifecycle::fromArray(['successor' => 'api.v2.things.show']);
+
+    expect($this->resolver->resolveSuccessorUrl($lifecycle, $context))->toBeNull();
 });
 
 test('resolves a path and an absolute url successor', function (): void {

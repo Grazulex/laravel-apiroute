@@ -7,6 +7,7 @@ namespace Grazulex\ApiRoute\Http\Headers;
 use Carbon\Carbon;
 use Grazulex\ApiRoute\Support\EndpointLifecycle;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
+use Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -17,7 +18,7 @@ final class EndpointHeaders
 {
     public function __construct(private readonly EndpointLifecycleResolver $resolver) {}
 
-    public function addToResponse(Response $response, EndpointLifecycle $lifecycle): Response
+    public function addToResponse(Response $response, EndpointLifecycle $lifecycle, ?Route $route = null): Response
     {
         /** @var array<string, mixed> $config */
         $config = config('apiroute.headers', []);
@@ -39,7 +40,7 @@ final class EndpointHeaders
 
         if ($include['successor_link'] ?? true) {
             $links = [];
-            $successorUrl = $this->resolver->resolveSuccessorUrl($lifecycle);
+            $successorUrl = $this->resolver->resolveSuccessorUrl($lifecycle, $route);
 
             if ($successorUrl !== null) {
                 $links[] = "<{$successorUrl}>; rel=\"successor-version\"";

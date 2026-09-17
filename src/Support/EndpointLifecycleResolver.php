@@ -7,6 +7,7 @@ namespace Grazulex\ApiRoute\Support;
 use Grazulex\ApiRoute\Attributes\Deprecated;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Exceptions\UrlGenerationException;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route as Router;
@@ -53,7 +54,12 @@ final class EndpointLifecycleResolver
         return $route instanceof Route ? $this->forRoute($route) : null;
     }
 
-    public function resolveSuccessorUrl(EndpointLifecycle $lifecycle): ?string
+    /**
+     * Turns the successor into an absolute URL. A named successor route is
+     * generated with the parameters of $context (the matched route by
+     * default) so that `things/{id}` can point to `api.v2.things.show`.
+     */
+    public function resolveSuccessorUrl(EndpointLifecycle $lifecycle, ?Route $context = null): ?string
     {
         $successor = $lifecycle->successor;
 
@@ -79,7 +85,7 @@ final class EndpointLifecycleResolver
             }
 
             if ($routes->hasNamedRoute($successor)) {
-                return route($successor);
+                return $this->generateSuccessorUrl($successor, $context);
             }
 
             if ($this->looksLikeRouteName($successor)) {
@@ -127,6 +133,33 @@ final class EndpointLifecycleResolver
         $attributes = $target->getAttributes(Deprecated::class);
 
         return $attributes === [] ? null : EndpointLifecycle::fromAttribute($attributes[0]->newInstance());
+    }
+
+    private function generateSuccessorUrl(string $name, ?Route $context): ?string
+    {
+        $context ??= $this->currentRoute();
+        // An unmatched route definition (e.g. from api:status) is not bound
+        // and has no parameters yet.
+        $parameters = $context instanceof Route && $context->hasParameters() ? $context->parameters() : [];
+
+        try {
+            return route($name, $parameters);
+        } catch (UrlGenerationException $e) {
+            Log::warning('[apiroute] successor route cannot be generated', ['successor' => $name, 'error' => $e->getMessage()]);
+
+            return null;
+        }
+    }
+
+    private function currentRoute(): ?Route
+    {
+        if (! $this->app->bound('request')) {
+            return null;
+        }
+
+        $route = $this->app->make(Request::class)->route();
+
+        return $route instanceof Route ? $route : null;
     }
 
     private function looksLikeRouteName(string $value): bool

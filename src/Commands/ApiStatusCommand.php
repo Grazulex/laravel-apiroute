@@ -117,7 +117,7 @@ class ApiStatusCommand extends Command
                 'version' => $this->versionOfRoute($route, $manager),
                 'since' => $lifecycle->deprecatedAt?->format('Y-m-d'),
                 'sunset' => $lifecycle->sunsetAt?->format('Y-m-d'),
-                'successor' => $resolver->resolveSuccessorUrl($lifecycle),
+                'successor' => $resolver->resolveSuccessorUrl($lifecycle, $route),
                 'is_sunset' => $lifecycle->isSunset(),
             ];
         }

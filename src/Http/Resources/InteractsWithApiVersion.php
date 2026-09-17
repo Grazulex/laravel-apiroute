@@ -9,6 +9,7 @@ use Grazulex\ApiRoute\Support\EndpointLifecycle;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 
 /**
  * Adds API version metadata to a Laravel 13 JsonApiResource document:
@@ -47,7 +48,8 @@ trait InteractsWithApiVersion
         }
 
         if ($lifecycle instanceof EndpointLifecycle) {
-            $successorLink = $resolver->resolveSuccessorUrl($lifecycle);
+            $route = $request->route();
+            $successorLink = $resolver->resolveSuccessorUrl($lifecycle, $route instanceof Route ? $route : null);
             $api['deprecation'] = $lifecycle->deprecatedAt?->toIso8601String() ?? ($api['deprecation'] ?? null);
             $api['sunset'] = $lifecycle->sunsetAt?->toIso8601String() ?? ($api['sunset'] ?? null);
             $api['successor'] = $successorLink ?? ($api['successor'] ?? null);

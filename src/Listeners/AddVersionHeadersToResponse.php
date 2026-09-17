@@ -13,6 +13,7 @@ use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 
 /**
  * Listener that adds API version headers to all responses.
@@ -47,7 +48,8 @@ class AddVersionHeadersToResponse
         $lifecycle = $this->lifecycles->forRequest($request);
 
         if ($lifecycle instanceof EndpointLifecycle) {
-            $this->endpointHeaders->addToResponse($event->response, $lifecycle);
+            $route = $request->route();
+            $this->endpointHeaders->addToResponse($event->response, $lifecycle, $route instanceof Route ? $route : null);
         }
     }
 

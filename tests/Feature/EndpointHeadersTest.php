@@ -7,6 +7,7 @@ use Grazulex\ApiRoute\Facades\ApiRoute;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\Tests\Support\Controllers\DeprecatedActionController;
 use Grazulex\ApiRoute\Tests\Support\Controllers\DeprecatedClassController;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(fn () => EndpointLifecycleResolver::flush());
@@ -88,4 +89,30 @@ test('headers.enabled=false disables endpoint headers too', function (): void {
     });
 
     $this->get('/api/v1/items')->assertOk()->assertHeaderMissing('Deprecation')->assertHeaderMissing('X-API-Endpoint-Status');
+});
+
+test('parameterised successor route is generated with the current route parameters', function (): void {
+    Route::get('/api/v2/things/{id}', fn (string $id) => 'ok')->name('api.v2.things.show');
+    ApiRoute::version('v1', function (): void {
+        Route::get('things/{id}', fn (string $id) => response()->json(['id' => $id]))->deprecated(successor: 'api.v2.things.show');
+    });
+
+    $this->get('/api/v1/things/5')
+        ->assertOk()
+        ->assertJson(['id' => '5'])
+        ->assertHeader('Link', '<http://localhost/api/v2/things/5>; rel="successor-version"');
+});
+
+test('successor route missing a required parameter is logged and skipped', function (): void {
+    Log::shouldReceive('warning')->once()->withArgs(fn (string $message): bool => str_contains($message, 'successor route cannot be generated'));
+    Route::get('/api/v2/things/{id}', fn (string $id) => 'ok')->name('api.v2.things.show');
+    ApiRoute::version('v1', function (): void {
+        Route::get('things', fn () => response()->json(['ok' => true]))->deprecated(successor: 'api.v2.things.show');
+    });
+
+    $this->get('/api/v1/things')
+        ->assertOk()
+        ->assertJson(['ok' => true])
+        ->assertHeaderMissing('Link')
+        ->assertHeader('X-API-Endpoint-Status', 'deprecated');
 });

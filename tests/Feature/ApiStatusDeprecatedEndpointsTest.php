@@ -6,6 +6,7 @@ use Grazulex\ApiRoute\Facades\ApiRoute;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\Tests\Support\Controllers\DeprecatedClassController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(fn () => EndpointLifecycleResolver::flush());
@@ -72,4 +73,18 @@ test('json output stays a flat array without deprecated endpoints', function ():
     expect($json)->toHaveKey('v1')
         ->and($json)->not->toHaveKey('versions')
         ->and($json['v1']['version'])->toBe('v1');
+});
+
+test('parameterised successor route cannot be generated outside a request and shows a dash', function (): void {
+    Log::shouldReceive('warning')->once()->withArgs(fn (string $message): bool => str_contains($message, 'successor route cannot be generated'));
+    Route::get('/api/v2/things/{id}', fn (string $id) => 'ok')->name('api.v2.things.show');
+    ApiRoute::version('v1', function (): void {
+        Route::get('things/{id}', fn (string $id) => 'ok')->deprecated(since: '2026-01-01', successor: 'api.v2.things.show');
+    });
+
+    Artisan::call('api:status', ['--json' => true]);
+    $json = json_decode(Artisan::output(), true);
+
+    expect($json['deprecated_endpoints'][0]['uri'])->toBe('api/v1/things/{id}')
+        ->and($json['deprecated_endpoints'][0]['successor'])->toBeNull();
 });

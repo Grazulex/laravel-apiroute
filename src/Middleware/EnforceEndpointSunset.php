@@ -9,6 +9,7 @@ use Grazulex\ApiRoute\Exceptions\EndpointSunsetException;
 use Grazulex\ApiRoute\Support\EndpointLifecycle;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Route;
 use Symfony\Component\HttpFoundation\Response;
 
 final class EnforceEndpointSunset
@@ -22,7 +23,9 @@ final class EnforceEndpointSunset
         if ($lifecycle instanceof EndpointLifecycle
             && $lifecycle->isSunset()
             && config('apiroute.sunset.action', 'reject') === 'reject') {
-            throw new EndpointSunsetException($lifecycle, $this->resolver->resolveSuccessorUrl($lifecycle));
+            $route = $request->route();
+
+            throw new EndpointSunsetException($lifecycle, $this->resolver->resolveSuccessorUrl($lifecycle, $route instanceof Route ? $route : null));
         }
 
         return $next($request);
