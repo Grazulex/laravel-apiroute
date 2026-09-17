@@ -61,6 +61,16 @@ test('endpoint values override version values, version status stays', function (
         ->assertHeader('Link', '<https://api.example.com/v2/items>; rel="successor-version"');
 });
 
+test('endpoint docs without a successor keeps the version successor link', function (): void {
+    ApiRoute::version('v1', function (): void {
+        Route::get('items', fn () => response()->json(['ok' => true]))->deprecated(docs: 'https://docs');
+    })->deprecated('2025-01-01')->setSuccessor('v2');
+
+    $this->get('/api/v1/items')
+        ->assertOk()
+        ->assertHeader('Link', '<http://localhost/api/v2/items>; rel="successor-version", <https://docs>; rel="deprecation"');
+});
+
 test('closure route with the deprecated macro gets the same headers', function (): void {
     ApiRoute::version('v1', function (): void {
         Route::get('closure', fn () => response()->json(['ok' => true]))->deprecated(since: '2026-05-05', successor: '/api/v2/closure');

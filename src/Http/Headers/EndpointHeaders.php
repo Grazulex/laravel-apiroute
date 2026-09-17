@@ -39,12 +39,13 @@ final class EndpointHeaders
         }
 
         if ($include['successor_link'] ?? true) {
-            $links = [];
             $successorUrl = $this->resolver->resolveSuccessorUrl($lifecycle, $route);
 
-            if ($successorUrl !== null) {
-                $links[] = "<{$successorUrl}>; rel=\"successor-version\"";
-            }
+            // The endpoint successor replaces the version one; without it the
+            // version-level Link (a single successor-version value) is kept.
+            $links = $successorUrl !== null
+                ? ["<{$successorUrl}>; rel=\"successor-version\""]
+                : $this->existingLinks($response);
 
             if ($lifecycle->docs !== null && $lifecycle->docs !== '') {
                 $links[] = "<{$lifecycle->docs}>; rel=\"deprecation\"";
@@ -60,5 +61,19 @@ final class EndpointHeaders
         }
 
         return $response;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function existingLinks(Response $response): array
+    {
+        $header = $response->headers->get('Link');
+
+        if ($header === null || $header === '') {
+            return [];
+        }
+
+        return array_values(array_filter(array_map(trim(...), explode(', ', $header)), fn (string $link): bool => $link !== ''));
     }
 }
