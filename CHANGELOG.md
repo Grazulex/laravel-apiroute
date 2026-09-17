@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.2.0) (2026-09-17)
+
+### Features
+
+- endpoint-level deprecation with the `#[Deprecated]` attribute (class or action) and the `->deprecated()` route macro: `Deprecation`, `Sunset`, `Link` (successor-version, deprecation) and `X-API-Endpoint-Status` headers
+- sunset endpoints are rejected (410 by default) following the existing `apiroute.sunset` policy (`api.endpoint-sunset` middleware)
+- JSON:API error documents for version and endpoint errors when the client sends `Accept: application/vnd.api+json`
+- `InteractsWithApiVersion` trait adding `meta.api` and `links.successor` to Laravel 13 JSON:API resources
+- `api:status` lists deprecated endpoints (table and `--json`)
+- new config key `headers.include.endpoint_status`
+
+### Bug Fixes
+
+- `available_versions` in the version-not-found error body now contains the version names (it previously contained nulls because `VersionDefinition` exposes properties through `__get()` without `__isset()`)
 ## [2.1.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.1.1) (2026-08-07)
 
 ### Bug Fixes
