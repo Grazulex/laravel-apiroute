@@ -11,6 +11,7 @@ use Grazulex\ApiRoute\Support\EndpointLifecycle;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Console\Command;
+use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 
@@ -125,7 +126,7 @@ class ApiStatusCommand extends Command
         return $rows;
     }
 
-    private function versionOfRoute(\Illuminate\Routing\Route $route, ApiRouteManager $manager): string
+    private function versionOfRoute(RoutingRoute $route, ApiRouteManager $manager): string
     {
         foreach ($manager->versions() as $version) {
             if (preg_match('#(^|/)' . preg_quote($version->name(), '#') . '(/|$)#', $route->uri()) === 1) {

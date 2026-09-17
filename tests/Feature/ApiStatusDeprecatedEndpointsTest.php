@@ -62,7 +62,7 @@ test('json output includes deprecated endpoints', function (): void {
         ]]);
 });
 
-test('json output stays a flat array without deprecated endpoints', function (): void {
+test('json output keeps the keyed-by-version object without deprecated endpoints', function (): void {
     ApiRoute::version('v1', function (): void {
         Route::get('fresh', fn () => 'ok');
     });
