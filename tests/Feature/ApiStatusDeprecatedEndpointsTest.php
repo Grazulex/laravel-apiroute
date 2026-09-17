@@ -48,7 +48,8 @@ test('json output includes deprecated endpoints', function (): void {
     Artisan::call('api:status', ['--json' => true]);
     $json = json_decode(Artisan::output(), true);
 
-    expect($json['versions'][0]['version'])->toBe('v1')
+    expect($json['versions'])->toHaveKey('v1')
+        ->and($json['versions']['v1']['version'])->toBe('v1')
         ->and($json['deprecated_endpoints'])->toBe([[
             'method' => 'GET',
             'uri' => 'api/v1/things',
@@ -66,6 +67,9 @@ test('json output stays a flat array without deprecated endpoints', function ():
     });
 
     Artisan::call('api:status', ['--json' => true]);
+    $json = json_decode(Artisan::output(), true);
 
-    expect(json_decode(Artisan::output(), true))->toBeList();
+    expect($json)->toHaveKey('v1')
+        ->and($json)->not->toHaveKey('versions')
+        ->and($json['v1']['version'])->toBe('v1');
 });

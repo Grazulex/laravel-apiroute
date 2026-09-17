@@ -61,7 +61,7 @@ class ApiStatusCommand extends Command
                 'sunset' => $version->sunsetDate()?->format('Y-m-d') ?? '-',
                 'usage' => $percentage . '%',
             ];
-        })->values()->toArray();
+        })->toArray();
 
         $endpoints = $this->deprecatedEndpoints($manager, $resolver);
 
