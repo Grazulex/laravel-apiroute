@@ -7,9 +7,12 @@ namespace Grazulex\ApiRoute\Commands;
 use Carbon\Carbon;
 use Grazulex\ApiRoute\ApiRouteManager;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
+use Grazulex\ApiRoute\Support\EndpointLifecycle;
+use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\VersionDefinition;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Route;
 
 class ApiStatusCommand extends Command
 {
@@ -20,7 +23,7 @@ class ApiStatusCommand extends Command
 
     protected $description = 'Display the status of all API versions';
 
-    public function handle(ApiRouteManager $manager, VersionTrackerInterface $tracker): int
+    public function handle(ApiRouteManager $manager, VersionTrackerInterface $tracker, EndpointLifecycleResolver $resolver): int
     {
         $specificVersion = $this->option('api-version');
 
@@ -28,10 +31,10 @@ class ApiStatusCommand extends Command
             return $this->showVersionDetails($manager, $tracker, (string) $specificVersion);
         }
 
-        return $this->showAllVersions($manager, $tracker);
+        return $this->showAllVersions($manager, $tracker, $resolver);
     }
 
-    private function showAllVersions(ApiRouteManager $manager, VersionTrackerInterface $tracker): int
+    private function showAllVersions(ApiRouteManager $manager, VersionTrackerInterface $tracker, EndpointLifecycleResolver $resolver): int
     {
         $versions = $manager->versions();
 
@@ -58,10 +61,13 @@ class ApiStatusCommand extends Command
                 'sunset' => $version->sunsetDate()?->format('Y-m-d') ?? '-',
                 'usage' => $percentage . '%',
             ];
-        })->toArray();
+        })->values()->toArray();
+
+        $endpoints = $this->deprecatedEndpoints($manager, $resolver);
 
         if ($isJson) {
-            $this->line(json_encode($rows, JSON_PRETTY_PRINT) ?: '[]');
+            $payload = $endpoints === [] ? $rows : ['versions' => $rows, 'deprecated_endpoints' => $endpoints];
+            $this->line(json_encode($payload, JSON_PRETTY_PRINT) ?: '[]');
 
             return self::SUCCESS;
         }
@@ -73,7 +79,61 @@ class ApiStatusCommand extends Command
 
         $this->displayWarnings($versions);
 
+        if ($endpoints !== []) {
+            $this->newLine();
+            $this->info('Deprecated endpoints');
+            $this->table(
+                ['Method', 'URI', 'Version', 'Since', 'Sunset', 'Successor'],
+                array_map(fn (array $row): array => [
+                    $row['method'],
+                    $row['uri'],
+                    $row['version'],
+                    $row['since'] ?? '-',
+                    ($row['sunset'] ?? '-') . ($row['is_sunset'] ? ' (SUNSET)' : ''),
+                    $row['successor'] ?? '-',
+                ], $endpoints),
+            );
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * @return list<array{method: string, uri: string, version: string, since: string|null, sunset: string|null, successor: string|null, is_sunset: bool}>
+     */
+    private function deprecatedEndpoints(ApiRouteManager $manager, EndpointLifecycleResolver $resolver): array
+    {
+        $rows = [];
+
+        foreach (Route::getRoutes()->getRoutes() as $route) {
+            $lifecycle = $resolver->forRoute($route);
+            if (! $lifecycle instanceof EndpointLifecycle) {
+                continue;
+            }
+
+            $rows[] = [
+                'method' => implode('|', array_diff($route->methods(), ['HEAD'])),
+                'uri' => $route->uri(),
+                'version' => $this->versionOfRoute($route, $manager),
+                'since' => $lifecycle->deprecatedAt?->format('Y-m-d'),
+                'sunset' => $lifecycle->sunsetAt?->format('Y-m-d'),
+                'successor' => $resolver->resolveSuccessorUrl($lifecycle),
+                'is_sunset' => $lifecycle->isSunset(),
+            ];
+        }
+
+        return $rows;
+    }
+
+    private function versionOfRoute(\Illuminate\Routing\Route $route, ApiRouteManager $manager): string
+    {
+        foreach ($manager->versions() as $version) {
+            if (preg_match('#(^|/)' . preg_quote($version->name(), '#') . '(/|$)#', $route->uri()) === 1) {
+                return $version->name();
+            }
+        }
+
+        return '-';
     }
 
     private function showVersionDetails(ApiRouteManager $manager, VersionTrackerInterface $tracker, string $versionName): int
