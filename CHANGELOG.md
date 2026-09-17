@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file.
 - `api:status` lists deprecated endpoints (table and `--json`)
 - new config key `headers.include.endpoint_status`
 
+### Changed
+
+- `api:status --json` now returns `{"versions": {...}, "deprecated_endpoints": [...]}` when at least one deprecated endpoint exists; the historical keyed-by-version object is unchanged otherwise
+
 ### Bug Fixes
 
 - `available_versions` in the version-not-found error body now contains the version names (it previously contained nulls because `VersionDefinition` exposes properties through `__get()` without `__isset()`)
