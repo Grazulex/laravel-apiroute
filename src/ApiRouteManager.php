@@ -10,6 +10,7 @@ use Grazulex\ApiRoute\Events\VersionCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 class ApiRouteManager
 {
@@ -198,16 +199,27 @@ class ApiRouteManager
             return;
         }
 
-        // Register routes for each configured domain
-        foreach ($domains as $domain) {
-            $this->registerRoutesForDomain($definition, $fullPrefix, $domain);
+        // Register routes for each configured domain. The first domain keeps
+        // the configured route names unchanged (so route() helpers stay
+        // backward compatible); additional domains get a unique suffix so
+        // `php artisan route:cache` doesn't choke on duplicate route names.
+        foreach ($domains as $index => $domain) {
+            $this->registerRoutesForDomain($definition, $fullPrefix, $domain, $index === 0);
         }
     }
 
     /**
      * Register routes for a specific domain (or no domain if null).
+     *
+     * When the same routes are registered on more than one domain, every
+     * route ends up with the same name unless we disambiguate them. Laravel
+     * tolerates duplicate names at runtime (the last one registered simply
+     * wins), but `route:cache` builds a Symfony RouteCollection that requires
+     * unique names and throws a LogicException otherwise. To keep `route()`
+     * calls backward compatible, only non-primary domains get their route
+     * names suffixed.
      */
-    private function registerRoutesForDomain(VersionDefinition $definition, string $prefix, ?string $domain): void
+    private function registerRoutesForDomain(VersionDefinition $definition, string $prefix, ?string $domain, bool $isPrimaryDomain = true): void
     {
         $routeGroup = Route::prefix($prefix)
             ->middleware($this->getMiddleware($definition));
@@ -219,6 +231,14 @@ class ApiRouteManager
 
         // Apply route name prefix if defined
         $routeName = $definition->routeName();
+
+        // On secondary domains, prepend a unique, domain-derived segment so
+        // routes named inside $definition->routes() (whether or not a name
+        // prefix is configured) don't collide with the primary domain's.
+        if (! $isPrimaryDomain && $domain !== null && $domain !== '') {
+            $routeName = ($routeName !== null ? rtrim($routeName, '.') . '.' : '') . Str::slug($domain, '_') . '.';
+        }
+
         if ($routeName !== null) {
             $routeGroup->name($routeName);
         }
@@ -244,9 +264,10 @@ class ApiRouteManager
             return;
         }
 
-        // Register routes for each configured domain
-        foreach ($domains as $domain) {
-            $this->registerRoutesForDomain($definition, $prefix, $domain);
+        // Register routes for each configured domain. See registerUriRoutes()
+        // for why only the first domain keeps unmodified route names.
+        foreach ($domains as $index => $domain) {
+            $this->registerRoutesForDomain($definition, $prefix, $domain, $index === 0);
         }
     }
 

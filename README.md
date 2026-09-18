@@ -158,6 +158,8 @@ Use environment variables for flexible configuration:
 API_DOMAINS=api.main.com,api.backup.com,api.proxy.com
 ```
 
+> **Route names:** when named routes (`->name(...)`, or the version's `name` prefix) are registered on more than one domain, only the **first** domain in the list keeps the exact configured name — so `route('api.users')` stays backward compatible. Every additional domain automatically gets a unique, domain-derived suffix (e.g. `api.api_backup_com.users`) so `php artisan route:cache` doesn't fail with duplicate route name errors.
+
 ## Automatic Headers
 
 On deprecated versions, responses include RFC-compliant headers:
