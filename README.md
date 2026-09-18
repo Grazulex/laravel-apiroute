@@ -1,5 +1,11 @@
 # Laravel ApiRoute
 
+> [!TIP]
+> **What Laravel ApiRoute does for you** — Ship v2 of your API without breaking the clients still on v1. Version your routes, deprecate endpoints with proper HTTP headers and retire old versions on a schedule — instead of hand-rolling all of this on every project.
+>
+> **This package is free and maintained on my own time.** If it saves you hours, a small contribution helps me keep it going:
+> [💖 GitHub Sponsors](https://github.com/sponsors/Grazulex) · [☕ Buy Me a Coffee](https://buymeacoffee.com/grazulex) · [PayPal](https://paypal.me/strauven)
+
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/grazulex/laravel-apiroute.svg?style=flat-square)](https://packagist.org/packages/grazulex/laravel-apiroute)
 [![Tests](https://github.com/grazulex/laravel-apiroute/actions/workflows/tests.yml/badge.svg)](https://github.com/grazulex/laravel-apiroute/actions/workflows/tests.yml)
 [![Static Analysis](https://github.com/grazulex/laravel-apiroute/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/grazulex/laravel-apiroute/actions/workflows/static-analysis.yml)
@@ -379,6 +385,14 @@ Please review [our security policy](SECURITY.md) on how to report security vulne
 
 - [@maks-oleksyuk](https://github.com/maks-oleksyuk) - Bug reports and testing
 - [@sameededitz](https://github.com/sameededitz) - Feature request for subdomain and multi-domain routing
+
+## Support This Package
+
+Laravel ApiRoute is free, open source and maintained on my own time. If it saves you hours, here is how you can give back:
+
+- ⭐ **Star the repository** — it helps other developers find it
+- 🐦 **Share it** with your team and network
+- 💖 **[Sponsor on GitHub](https://github.com/sponsors/Grazulex)**, **[buy me a coffee](https://buymeacoffee.com/grazulex)** or **[donate via PayPal](https://paypal.me/strauven)** — every contribution funds maintenance, new features and Laravel upgrades
 
 ## License
 
