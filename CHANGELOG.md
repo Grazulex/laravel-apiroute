@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.2.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.2.1) (2026-09-18)
+
+### Bug Fixes
+
+- `route:cache` failed with a duplicate route name `LogicException` when `strategies.uri.domain` lists several domains. The first domain keeps the configured route names (`api.users`); every additional domain now gets a unique, domain-derived segment (`api.api_backup_com.users`). `route()` calls therefore resolve predictably to the first configured domain instead of the last one registered (#31, #32 by @sameedkun)
+
 ## [2.2.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.2.0) (2026-09-17)
 
 ### Features
