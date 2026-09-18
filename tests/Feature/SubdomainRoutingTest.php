@@ -271,3 +271,61 @@ test('array with empty strings is filtered', function (): void {
     expect($foundDomains)->toHaveCount(1)
         ->and($foundDomains)->toContain('api.example.com');
 });
+
+test('named routes stay unique across multiple domains so route:cache does not fail', function (): void {
+    $routesFile = tempnam(sys_get_temp_dir(), 'apiroute_') . '.php';
+    file_put_contents($routesFile, <<<'PHP'
+        <?php
+        use Illuminate\Support\Facades\Route;
+        Route::get('/', fn () => response()->json(['ok' => true]))->name('root');
+        Route::post('login', fn () => response()->json(['ok' => true]))->name('login');
+        PHP);
+
+    config([
+        'apiroute.versions' => [
+            'v1' => [
+                'routes' => $routesFile,
+                'name' => 'api.',
+                'status' => 'active',
+            ],
+        ],
+        'apiroute.strategies.uri.domain' => ['api.main.test', 'api.backup.test'],
+        'apiroute.strategies.uri.prefix' => '',
+    ]);
+
+    $manager = app(ApiRouteManager::class);
+
+    try {
+        $manager->reset();
+        $manager->boot();
+    } finally {
+        unlink($routesFile);
+    }
+
+    $routes = Route::getRoutes();
+    $routes->refreshNameLookups();
+
+    // The primary (first configured) domain keeps the exact configured name,
+    // so route() calls made before this fix continue to resolve.
+    expect($routes->getByName('api.root'))->not->toBeNull();
+    expect($routes->getByName('api.root')->getDomain())->toBe('api.main.test');
+    expect($routes->getByName('api.login'))->not->toBeNull();
+
+    // The secondary domain must NOT reuse those names.
+    $names = collect(iterator_to_array($routes))
+        ->map(fn ($route) => $route->getName())
+        ->filter()
+        ->values();
+
+    expect($names->duplicates())->toBeEmpty();
+
+    // The secondary domain gets an underscore-joined, readable suffix
+    // matching the scheme documented in the README.
+    expect($routes->getByName('api.api_backup_test.root'))->not->toBeNull();
+    expect($routes->getByName('api.api_backup_test.root')->getDomain())->toBe('api.backup.test');
+    expect($routes->getByName('api.api_backup_test.login'))->not->toBeNull();
+
+    // This is exactly what `php artisan route:cache` runs internally; it
+    // throws a LogicException on duplicate route names.
+    expect(fn () => $routes->toSymfonyRouteCollection())->not->toThrow(LogicException::class);
+});
