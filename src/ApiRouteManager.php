@@ -236,7 +236,7 @@ class ApiRouteManager
         // routes named inside $definition->routes() (whether or not a name
         // prefix is configured) don't collide with the primary domain's.
         if (! $isPrimaryDomain && $domain !== null && $domain !== '') {
-            $routeName = ($routeName !== null ? rtrim($routeName, '.') . '.' : '') . Str::slug($domain, '_') . '.';
+            $routeName = ($routeName !== null ? rtrim($routeName, '.') . '.' : '') . Str::slug(str_replace('.', '_', $domain), '_') . '.';
         }
 
         if ($routeName !== null) {

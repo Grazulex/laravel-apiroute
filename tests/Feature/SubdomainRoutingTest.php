@@ -294,10 +294,13 @@ test('named routes stay unique across multiple domains so route:cache does not f
     ]);
 
     $manager = app(ApiRouteManager::class);
-    $manager->reset();
-    $manager->boot();
 
-    unlink($routesFile);
+    try {
+        $manager->reset();
+        $manager->boot();
+    } finally {
+        unlink($routesFile);
+    }
 
     $routes = Route::getRoutes();
     $routes->refreshNameLookups();
@@ -316,10 +319,11 @@ test('named routes stay unique across multiple domains so route:cache does not f
 
     expect($names->duplicates())->toBeEmpty();
 
-    $backupRoute = collect(iterator_to_array($routes))
-        ->first(fn ($route) => $route->getDomain() === 'api.backup.test' && str_contains((string) $route->getName(), 'root'));
-    expect($backupRoute)->not->toBeNull();
-    expect($backupRoute->getName())->not->toBe('api.root');
+    // The secondary domain gets an underscore-joined, readable suffix
+    // matching the scheme documented in the README.
+    expect($routes->getByName('api.api_backup_test.root'))->not->toBeNull();
+    expect($routes->getByName('api.api_backup_test.root')->getDomain())->toBe('api.backup.test');
+    expect($routes->getByName('api.api_backup_test.login'))->not->toBeNull();
 
     // This is exactly what `php artisan route:cache` runs internally; it
     // throws a LogicException on duplicate route names.
