@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.3.0](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.3.0) (2026-10-08)
+
+### Changed
+
+- **Minimum PHP version is now 8.4**: PHP 8.3 is no longer supported (#35)
+- CI test matrix now runs PHP 8.4 and 8.5 (#35)
+
 ## [2.2.1](https://github.com/Grazulex/laravel-apiroute/releases/tag/v2.2.1) (2026-09-18)
 
 ### Bug Fixes
