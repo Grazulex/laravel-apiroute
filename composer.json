@@ -30,7 +30,7 @@
         "nesbot/carbon": "^3.15"
     },
     "require-dev": {
-        "larastan/larastan": "^3.14",
+        "larastan/larastan": "^3.15",
         "laravel/pint": "^1.32",
         "orchestra/testbench": "^10.2|^11.0",
         "pestphp/pest": "^3.8|^4.7|^5.3",
@@ -93,6 +93,11 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true
+        },
+        "policy": {
+            "cooldown": {
+                "period": "3 days"
+            }
         }
     },
     "minimum-stability": "stable",
