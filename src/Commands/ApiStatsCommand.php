@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Grazulex\ApiRoute\Commands;
 
 use Grazulex\ApiRoute\ApiRouteManager;
+use Grazulex\ApiRoute\Contracts\ConsumerTrackerInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Illuminate\Console\Command;
 
@@ -13,6 +14,7 @@ class ApiStatsCommand extends Command
     protected $signature = 'api:stats
                             {--period=30 : Number of days to analyze}
                             {--api-version= : Show stats for a specific version}
+                            {--consumers : List the consumers (hashed) of the version given with --api-version}
                             {--json : Output as JSON}';
 
     protected $description = 'Display API version usage statistics';
@@ -22,6 +24,16 @@ class ApiStatsCommand extends Command
         $period = (int) $this->option('period');
 
         $specificVersion = $this->option('api-version');
+
+        if ($this->option('consumers')) {
+            if ($specificVersion === null || $specificVersion === '') {
+                $this->error('The --consumers option requires --api-version.');
+
+                return self::FAILURE;
+            }
+
+            return $this->showConsumerStats($tracker, (string) $specificVersion, $period);
+        }
 
         if ($specificVersion !== null) {
             return $this->showVersionStats($tracker, (string) $specificVersion, $period);
@@ -91,6 +103,45 @@ class ApiStatsCommand extends Command
                 }
             }
         }
+
+        return self::SUCCESS;
+    }
+
+    private function showConsumerStats(VersionTrackerInterface $tracker, string $version, int $period): int
+    {
+        if (! $tracker instanceof ConsumerTrackerInterface) {
+            $this->warn('The configured tracking driver does not support per-consumer statistics.');
+
+            return self::SUCCESS;
+        }
+
+        $stats = $tracker->getConsumerStats($version, $period);
+
+        if ($this->option('json')) {
+            $this->line(json_encode($stats, JSON_PRETTY_PRINT) ?: '[]');
+
+            return self::SUCCESS;
+        }
+
+        if ($stats === []) {
+            $this->warn("No consumer statistics available for version '{$version}'.");
+            $this->line('Make sure tracking.consumers is enabled in config/apiroute.php');
+
+            return self::SUCCESS;
+        }
+
+        $this->info("Consumers of version {$version} (Last {$period} days): " . count($stats));
+        $this->newLine();
+
+        $rows = array_map(fn (array $row): array => [
+            $row['consumer'],
+            number_format($row['total_requests']),
+            number_format($row['success_requests']),
+            number_format($row['error_requests']),
+            $row['last_seen_at'] ?? '-',
+        ], $stats);
+
+        $this->table(['Consumer', 'Requests', 'Success', 'Errors', 'Last seen'], $rows);
 
         return self::SUCCESS;
     }

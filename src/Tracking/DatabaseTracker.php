@@ -5,11 +5,91 @@ declare(strict_types=1);
 namespace Grazulex\ApiRoute\Tracking;
 
 use Carbon\Carbon;
+use Grazulex\ApiRoute\Contracts\ConsumerTrackerInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Illuminate\Support\Facades\DB;
 
-class DatabaseTracker implements VersionTrackerInterface
+class DatabaseTracker implements ConsumerTrackerInterface, VersionTrackerInterface
 {
+    public function trackConsumer(string $version, string $consumer, int $status): void
+    {
+        $table = $this->consumersTable();
+
+        $now = Carbon::now();
+        $isSuccess = $status >= 200 && $status < 400;
+
+        $conditions = [
+            'version' => $version,
+            'consumer_hash' => $consumer,
+            'date' => $now->toDateString(),
+        ];
+
+        $affected = DB::table($table)
+            ->where($conditions)
+            ->update([
+                'requests_count' => DB::raw('requests_count + 1'),
+                'success_count' => DB::raw('success_count + ' . ($isSuccess ? 1 : 0)),
+                'error_count' => DB::raw('error_count + ' . ($isSuccess ? 0 : 1)),
+                'last_seen_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+        if ($affected === 0) {
+            DB::table($table)->insert([
+                ...$conditions,
+                'requests_count' => 1,
+                'success_count' => $isSuccess ? 1 : 0,
+                'error_count' => $isSuccess ? 0 : 1,
+                'last_seen_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+    }
+
+    /**
+     * @return array<int, array{consumer: string, total_requests: int, success_requests: int, error_requests: int, last_seen_at: string|null}>
+     */
+    public function getConsumerStats(string $version, int $days = 30): array
+    {
+        $startDate = Carbon::now()->subDays($days)->toDateString();
+
+        $results = DB::table($this->consumersTable())
+            ->where('version', $version)
+            ->where('date', '>=', $startDate)
+            ->groupBy('consumer_hash')
+            ->selectRaw('consumer_hash')
+            ->selectRaw('SUM(requests_count) as total_requests')
+            ->selectRaw('SUM(success_count) as success_requests')
+            ->selectRaw('SUM(error_count) as error_requests')
+            ->selectRaw('MAX(last_seen_at) as last_seen_at')
+            ->orderByDesc('total_requests')
+            ->orderBy('consumer_hash')
+            ->get();
+
+        $stats = [];
+        foreach ($results as $result) {
+            $lastSeen = $result->last_seen_at ?? null;
+
+            $stats[] = [
+                'consumer' => (string) $result->consumer_hash,
+                'total_requests' => (int) $result->total_requests,
+                'success_requests' => (int) $result->success_requests,
+                'error_requests' => (int) $result->error_requests,
+                'last_seen_at' => $lastSeen === null ? null : Carbon::parse((string) $lastSeen)->toIso8601String(),
+            ];
+        }
+
+        return $stats;
+    }
+
+    private function consumersTable(): string
+    {
+        $table = config('apiroute.tracking.consumers.table', 'api_version_consumers');
+
+        return is_string($table) && $table !== '' ? $table : 'api_version_consumers';
+    }
+
     public function track(
         string $version,
         string $endpoint,

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Grazulex\ApiRoute\Tracking\DefaultConsumerResolver;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -138,12 +140,26 @@ return [
     |
     | Track API version usage for analytics and monitoring.
     |
+    | 'consumers' tracks which consumers (users, clients) call each version,
+    | to know who still relies on a deprecated version before removing it.
+    | Identifiers are never stored in clear: they are hashed with HMAC-SHA256
+    | using 'hash_key' (falls back to app.key). Supported by the 'database'
+    | driver only (table published with the package migrations).
+    |
     */
     'tracking' => [
         'enabled' => env('API_VERSION_TRACKING', false),
         'driver' => 'database',      // 'database', 'redis', 'null'
         'table' => 'api_version_stats',
         'aggregate' => 'hourly',     // 'realtime', 'hourly', 'daily'
+        'consumers' => [
+            'enabled' => env('API_VERSION_TRACK_CONSUMERS', false),
+            'table' => 'api_version_consumers',
+            'resolver' => DefaultConsumerResolver::class,
+            'header' => null,            // e.g. 'X-Client-Id', used when no user is authenticated
+            'hash_key' => env('API_VERSION_CONSUMER_HASH_KEY'),
+            'only_deprecated' => false,  // Only track consumers of deprecated or sunset versions
+        ],
     ],
 
     /*
