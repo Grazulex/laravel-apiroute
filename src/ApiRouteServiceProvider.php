@@ -9,6 +9,7 @@ use Grazulex\ApiRoute\Commands\ApiStatsCommand;
 use Grazulex\ApiRoute\Commands\ApiStatusCommand;
 use Grazulex\ApiRoute\Commands\ApiSunsetCommand;
 use Grazulex\ApiRoute\Commands\ApiVersionCommand;
+use Grazulex\ApiRoute\Contracts\ConsumerResolverInterface;
 use Grazulex\ApiRoute\Contracts\VersionResolverInterface;
 use Grazulex\ApiRoute\Contracts\VersionTrackerInterface;
 use Grazulex\ApiRoute\Http\Headers\EndpointHeaders;
@@ -22,7 +23,9 @@ use Grazulex\ApiRoute\Middleware\TrackApiUsage;
 use Grazulex\ApiRoute\Support\ApiVersionContext;
 use Grazulex\ApiRoute\Support\EndpointLifecycleResolver;
 use Grazulex\ApiRoute\Support\VersionStatus;
+use Grazulex\ApiRoute\Tracking\ConsumerHasher;
 use Grazulex\ApiRoute\Tracking\DatabaseTracker;
+use Grazulex\ApiRoute\Tracking\DefaultConsumerResolver;
 use Grazulex\ApiRoute\Tracking\NullTracker;
 use Grazulex\ApiRoute\Tracking\RedisTracker;
 use Illuminate\Contracts\Foundation\Application;
@@ -72,6 +75,19 @@ class ApiRouteServiceProvider extends ServiceProvider
                 'redis' => new RedisTracker,
                 default => new NullTracker,
             };
+        });
+
+        $this->app->singleton(ConsumerHasher::class);
+
+        $this->app->bind(ConsumerResolverInterface::class, function (Application $app): ConsumerResolverInterface {
+            $resolver = $app['config']['apiroute.tracking.consumers.resolver'] ?? null;
+
+            if (is_string($resolver) && is_a($resolver, ConsumerResolverInterface::class, true)) {
+                /** @var ConsumerResolverInterface */
+                return $app->make($resolver);
+            }
+
+            return new DefaultConsumerResolver;
         });
     }
 

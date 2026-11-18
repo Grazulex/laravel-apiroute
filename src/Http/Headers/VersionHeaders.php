@@ -33,15 +33,15 @@ class VersionHeaders
             $response->headers->set('X-API-Version-Status', $version->status()->value);
         }
 
-        // Deprecation header (RFC 8594)
+        // Deprecation header (RFC 9745), format set by headers.deprecation_format
         if (($include['deprecation'] ?? true) && $version->deprecationDate() instanceof Carbon) {
             $response->headers->set(
                 'Deprecation',
-                $version->deprecationDate()->format(Carbon::RFC7231)
+                DeprecationHeaderValue::format($version->deprecationDate())
             );
         }
 
-        // Sunset header (RFC 7231)
+        // Sunset header (RFC 8594), RFC 7231 HTTP-date
         if (($include['sunset'] ?? true) && $version->sunsetDate() instanceof Carbon) {
             $response->headers->set(
                 'Sunset',

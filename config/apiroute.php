@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use Grazulex\ApiRoute\Tracking\DefaultConsumerResolver;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -111,14 +113,21 @@ return [
     |
     | Automatically add version-related headers to responses.
     |
+    | 'deprecation_format' sets the value format of the Deprecation header:
+    | - 'rfc7231': HTTP-date, e.g. "Sun, 01 Jun 2025 00:00:00 GMT" (default,
+    |   kept for backward compatibility)
+    | - 'rfc9745': Structured Field Date, e.g. "@1748736000", as required
+    |   by RFC 9745
+    |
     */
     'headers' => [
         'enabled' => true,
+        'deprecation_format' => env('API_DEPRECATION_HEADER_FORMAT', 'rfc7231'),
         'include' => [
             'version' => true,           // X-API-Version
             'status' => true,            // X-API-Version-Status
-            'deprecation' => true,       // Deprecation (RFC 8594)
-            'sunset' => true,            // Sunset (RFC 7231)
+            'deprecation' => true,       // Deprecation (RFC 9745)
+            'sunset' => true,            // Sunset (RFC 8594, HTTP-date)
             'successor_link' => true,    // Link rel="successor-version"
             'endpoint_status' => true,   // X-API-Endpoint-Status (deprecated|sunset)
         ],
@@ -131,12 +140,26 @@ return [
     |
     | Track API version usage for analytics and monitoring.
     |
+    | 'consumers' tracks which consumers (users, clients) call each version,
+    | to know who still relies on a deprecated version before removing it.
+    | Identifiers are never stored in clear: they are hashed with HMAC-SHA256
+    | using 'hash_key' (falls back to app.key). Supported by the 'database'
+    | driver only (table published with the package migrations).
+    |
     */
     'tracking' => [
         'enabled' => env('API_VERSION_TRACKING', false),
         'driver' => 'database',      // 'database', 'redis', 'null'
         'table' => 'api_version_stats',
         'aggregate' => 'hourly',     // 'realtime', 'hourly', 'daily'
+        'consumers' => [
+            'enabled' => env('API_VERSION_TRACK_CONSUMERS', false),
+            'table' => 'api_version_consumers',
+            'resolver' => DefaultConsumerResolver::class,
+            'header' => null,            // e.g. 'X-Client-Id', used when no user is authenticated
+            'hash_key' => env('API_VERSION_CONSUMER_HASH_KEY'),
+            'only_deprecated' => false,  // Only track consumers of deprecated or sunset versions
+        ],
     ],
 
     /*

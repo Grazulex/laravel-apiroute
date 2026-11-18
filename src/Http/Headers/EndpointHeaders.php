@@ -31,7 +31,7 @@ final class EndpointHeaders
         $include = $config['include'] ?? [];
 
         if (($include['deprecation'] ?? true) && $lifecycle->deprecatedAt instanceof Carbon) {
-            $response->headers->set('Deprecation', $lifecycle->deprecatedAt->format(Carbon::RFC7231));
+            $response->headers->set('Deprecation', DeprecationHeaderValue::format($lifecycle->deprecatedAt));
         }
 
         if (($include['sunset'] ?? true) && $lifecycle->sunsetAt instanceof Carbon) {

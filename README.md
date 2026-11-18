@@ -18,7 +18,7 @@
 ## Features
 
 - **Multi-strategy versioning** - URI path, Header, Query parameter, or Accept header
-- **Automatic deprecation headers** - `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers as RFC 7231 HTTP-dates
+- **Automatic deprecation headers** - `Deprecation` (RFC 9745) and `Sunset` (RFC 8594) headers as RFC 7231 HTTP-dates (`Deprecation` can use the RFC 9745 `@<unix-timestamp>` format)
 - **Version lifecycle management** - Active, Deprecated, Sunset, Removed states
 - **Intelligent fallback** - Route fallback to previous versions when needed
 - **Artisan commands** - Scaffold, monitor, and manage API versions
@@ -181,6 +181,8 @@ X-API-Version: v1
 X-API-Version-Status: deprecated
 ```
 
+The `Deprecation` header is an HTTP-date by default for backward compatibility. Set `headers.deprecation_format` to `rfc9745` (or `API_DEPRECATION_HEADER_FORMAT=rfc9745`) to emit the RFC 9745 format, e.g. `Deprecation: @1748736000`. `Sunset` always stays an HTTP-date.
+
 ## Deprecating a single endpoint
 
 Beyond version-level deprecation, a single controller class, action, or route can be marked deprecated on its own, independently of the API version it belongs to.
@@ -214,7 +216,7 @@ Route::get('/api/v2/closure', fn () => response()->json(['ok' => true]))
 
 | Header | When | Notes |
 | --- | --- | --- |
-| `Deprecation` | `since` is set | RFC 9745 header, emitted as an RFC 7231 HTTP-date (same format as the version headers) |
+| `Deprecation` | `since` is set | RFC 9745 header, same format as the version headers (HTTP-date by default, `@<unix-timestamp>` with `headers.deprecation_format` = `rfc9745`) |
 | `Sunset` | `sunset` is set | RFC 8594 header, RFC 7231 HTTP-date |
 | `Link` | `successor` and/or `docs` set | `rel="successor-version"` and `rel="deprecation"` (RFC 9745) |
 | `X-API-Endpoint-Status` | endpoint is deprecated or sunset | `deprecated` or `sunset`, gated by `headers.include.endpoint_status` |
