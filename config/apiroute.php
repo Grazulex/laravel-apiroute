@@ -111,14 +111,21 @@ return [
     |
     | Automatically add version-related headers to responses.
     |
+    | 'deprecation_format' sets the value format of the Deprecation header:
+    | - 'rfc7231': HTTP-date, e.g. "Sun, 01 Jun 2025 00:00:00 GMT" (default,
+    |   kept for backward compatibility)
+    | - 'rfc9745': Structured Field Date, e.g. "@1748736000", as required
+    |   by RFC 9745
+    |
     */
     'headers' => [
         'enabled' => true,
+        'deprecation_format' => env('API_DEPRECATION_HEADER_FORMAT', 'rfc7231'),
         'include' => [
             'version' => true,           // X-API-Version
             'status' => true,            // X-API-Version-Status
-            'deprecation' => true,       // Deprecation (RFC 8594)
-            'sunset' => true,            // Sunset (RFC 7231)
+            'deprecation' => true,       // Deprecation (RFC 9745)
+            'sunset' => true,            // Sunset (RFC 8594, HTTP-date)
             'successor_link' => true,    // Link rel="successor-version"
             'endpoint_status' => true,   // X-API-Endpoint-Status (deprecated|sunset)
         ],
