@@ -295,6 +295,9 @@ php artisan api:deprecate v1 --on=2025-06-01 --sunset=2025-12-01
 
 # View usage statistics
 php artisan api:stats --period=30
+
+# List routes added, removed or deprecated between two versions
+php artisan api:diff v1 v2 --json
 ```
 
 ## Configuration
