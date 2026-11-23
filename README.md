@@ -298,6 +298,9 @@ php artisan api:stats --period=30
 
 # List routes added, removed or deprecated between two versions
 php artisan api:diff v1 v2 --json
+
+# Generate the OpenAPI specification of a version
+php artisan api:openapi v1 --output=docs/openapi-v1.json
 ```
 
 ## Configuration
