@@ -6,6 +6,7 @@ namespace Grazulex\ApiRoute;
 
 use Grazulex\ApiRoute\Commands\ApiDeprecateCommand;
 use Grazulex\ApiRoute\Commands\ApiDiffCommand;
+use Grazulex\ApiRoute\Commands\ApiOpenApiCommand;
 use Grazulex\ApiRoute\Commands\ApiStatsCommand;
 use Grazulex\ApiRoute\Commands\ApiStatusCommand;
 use Grazulex\ApiRoute\Commands\ApiSunsetCommand;
@@ -114,6 +115,7 @@ class ApiRouteServiceProvider extends ServiceProvider
                 ApiSunsetCommand::class,
                 ApiStatsCommand::class,
                 ApiDiffCommand::class,
+                ApiOpenApiCommand::class,
             ]);
         }
 
